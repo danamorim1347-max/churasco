@@ -96,7 +96,7 @@
         .status-Cancelado { border-left: 12px solid #4b5563 !important; background-color: #f3f4f6; opacity: 0.5; }
 
         @media print {
-            header, nav, main, #cart-fixed, #modal-checkout, #view-admin, #view-login, #view-acompanhar, #modal-carrinho, #modal-detalhes-produto, #modal-editar-prod, #modal-editar-promocao, #modal-editar-tamanho, #modal-sabores-promocao, button, select, i, .no-print { 
+            header, nav, main, #cart-fixed, #modal-checkout, #view-admin, #view-login, #view-acompanhar, #modal-carrinho, #modal-detalhes-produto, #modal-editar-prod, #modal-editar-promocao, #modal-editar-tamanho, #modal-carnes-promocao, button, select, i, .no-print { 
                 display: none !important; 
             }
             #secao-impressao { 
@@ -191,7 +191,7 @@
         @media (max-width: 360px) {
             .header-banner { height: 150px !important; }
             #cli-nome { font-size: 1.5rem !important; }
-            #lista-tamanhos-espeto { grid-template-columns: repeat(2, 1fr) !important; }
+            #lista-tipos-espeto { grid-template-columns: repeat(2, 1fr) !important; }
             button[onclick="abrirMontadorEspeto()"] { padding: 10px !important; font-size: 10px !important; }
             #cardapio > div { padding: 10px !important; gap: 10px !important; }
         }
@@ -397,13 +397,13 @@
                 <input id="promocao-preco-original" type="number" step="0.01" placeholder="Preço original" class="flex-1 p-3 border rounded-xl text-sm font-black">
             </div>
             
-            <!-- Nova seção: Seleção de espetos -->
+            <!-- Nova seção: Seleção de carnes -->
             <div class="border-t pt-4">
-                <h3 class="font-bold text-sm mb-3">Espetos Inclusos (opcional)</h3>
-                <div id="promocao-espetos-container" class="space-y-2 max-h-40 overflow-y-auto">
-                    <!-- Espetos serão carregados aqui -->
+                <h3 class="font-bold text-sm mb-3">Carnes Inclusas (opcional)</h3>
+                <div id="promocao-carnes-container" class="space-y-2 max-h-40 overflow-y-auto">
+                    <!-- Carnes serão carregadas aqui -->
                 </div>
-                <div class="text-xs text-gray-500 mt-2">Selecione até 3 espetos para esta promoção</div>
+                <div class="text-xs text-gray-500 mt-2">Selecione até 3 carnes para esta promoção</div>
             </div>
             
             <input id="promocao-imagem" type="text" placeholder="URL da Imagem" class="w-full p-3 border rounded-xl text-sm">
@@ -422,18 +422,20 @@
             
             <!-- Tamanhos -->
             <div class="mb-6">
-                <h3 class="font-black text-sm uppercase text-gray-800 mb-3">1. Escolha o Tipo</h3>
-                <div id="lista-tipos-espeto" class="grid grid-cols-2 gap-2">
-                    <!-- Tipos serão carregados dinamicamente aqui -->
+                <h3 class="font-black text-sm uppercase text-gray-800 mb-3">1. Escolha o Tamanho</h3>
+                <div id="lista-tipos-espeto" class="grid grid-cols-3 gap-2">
+                    <!-- Tamanhos serão carregados dinamicamente aqui -->
                 </div>
+                <div class="text-[10px] text-gray-500 mt-2 italic">O preço base do espeto varia conforme o tamanho</div>
             </div>
             
             <!-- Carnes -->
             <div class="mb-6">
-                <h3 class="font-black text-sm uppercase text-gray-800 mb-3">2. Escolha as Carnes (até 2)</h3>
+                <h3 class="font-black text-sm uppercase text-gray-800 mb-3">2. Escolha as Carnes (máximo 3)</h3>
                 <div id="lista-carnes" class="space-y-2">
                     <!-- Carnes serão carregadas aqui -->
                 </div>
+                <div id="carnes-selecionadas-info" class="text-[10px] text-red-600 mt-1 font-bold"></div>
             </div>
             
             <!-- Acompanhamentos -->
@@ -459,7 +461,7 @@
                     <span id="preco-montador-espeto">R$ 0,00</span>
                 </div>
                 <div id="resumo-montador-espeto" class="text-[10px] text-gray-600 mt-1">
-                    <div id="resumo-tipo">Tipo: --</div>
+                    <div id="resumo-tipo">Tamanho: --</div>
                     <div id="resumo-carnes">Carnes: --</div>
                     <div id="resumo-acompanhamentos">Acompanhamentos: --</div>
                     <div id="resumo-molhos">Molhos: --</div>
@@ -569,36 +571,43 @@
                 { nome: "Espeto de Linguiça", descricao: "Linguiça toscana", preco: 14.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
                 { nome: "Espeto Misto", descricao: "Picanha, frango e linguiça", preco: 24.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
                 
-                // Carnes para montador
-                { nome: "Picanha", descricao: "Cortes nobres", preco: 12.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
-                { nome: "Alcatra", descricao: "Carne macia", preco: 10.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
-                { nome: "Frango", descricao: "Peito de frango", preco: 8.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
-                { nome: "Coração", descricao: "Coração de frango", preco: 9.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
-                { nome: "Linguiça", descricao: "Linguiça toscana", preco: 7.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
-                { nome: "Costela", descricao: "Costela desossada", preco: 11.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                // Carnes para montador (preço adicional por carne)
+                { nome: "Picanha", descricao: "Carne nobre, macia e saborosa", preco: 15.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                { nome: "Alcatra", descricao: "Corte macio, suculento", preco: 12.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                { nome: "Frango", descricao: "Peito de frango marinado", preco: 8.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                { nome: "Coração", descricao: "Coração de frango grelhado", preco: 10.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                { nome: "Linguiça", descricao: "Linguiça toscana artesanal", preco: 7.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                { nome: "Costela", descricao: "Costela desossada", preco: 14.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                { nome: "Maminha", descricao: "Maminha grelhada", preco: 13.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
+                { nome: "Contrafilé", descricao: "Contrafilé suculento", preco: 14.00, categoria_nome: "Carnes", imagem_url: "", disponivel: true },
                 
                 // Acompanhamentos
                 { nome: "Arroz", descricao: "Porção de arroz branco", preco: 8.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
-                { nome: "Farofa", descricao: "Farofa temperada", preco: 6.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
-                { nome: "Vinagrete", descricao: "Vinagrete tradicional", preco: 5.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
-                { nome: "Mandioquinha", descricao: "Mandioquinha frita", preco: 10.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
-                { nome: "Pão de alho", descricao: "Pão de alho crocante", preco: 7.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Farofa", descricao: "Farofa temperada com bacon", preco: 7.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Vinagrete", descricao: "Vinagrete tradicional", preco: 6.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Mandioquinha", descricao: "Mandioquinha frita", preco: 12.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Pão de alho", descricao: "Pão de alho crocante", preco: 8.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Salada", descricao: "Salada verde com tomate", preco: 8.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Batata frita", descricao: "Batata frita crocante", preco: 10.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
                 
                 // Molhos
-                { nome: "Molho de alho", descricao: "Molho cremoso de alho", preco: 3.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
-                { nome: "Molho barbecue", descricao: "Molho barbecue defumado", preco: 3.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
-                { nome: "Molho picante", descricao: "Molho apimentado", preco: 3.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
-                { nome: "Molho chimichurri", descricao: "Chimichurri argentino", preco: 4.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
+                { nome: "Molho de alho", descricao: "Molho cremoso de alho", preco: 4.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
+                { nome: "Molho barbecue", descricao: "Molho barbecue defumado", preco: 4.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
+                { nome: "Molho picante", descricao: "Molho apimentado", preco: 4.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
+                { nome: "Molho chimichurri", descricao: "Chimichurri argentino", preco: 5.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
+                { nome: "Molho mostarda", descricao: "Mostarda e mel", preco: 4.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
                 
                 // Bebidas
                 { nome: "Cerveja Long Neck", descricao: "Heineken, Stella, etc", preco: 8.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true },
                 { nome: "Refrigerante Lata", descricao: "Coca, Guaraná, etc", preco: 5.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true },
                 { nome: "Água Mineral", descricao: "500ml", preco: 3.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true },
+                { nome: "Suco Natural", descricao: "Laranja ou Limão", preco: 7.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true },
                 
                 // Porções
                 { nome: "Batata Frita", descricao: "Porção grande 500g", preco: 25.90, categoria_nome: "Porções", imagem_url: "", disponivel: true },
                 { nome: "Mandioca Frita", descricao: "Porção 400g", preco: 22.90, categoria_nome: "Porções", imagem_url: "", disponivel: true },
                 { nome: "Polenta Frita", descricao: "Porção 300g", preco: 20.90, categoria_nome: "Porções", imagem_url: "", disponivel: true },
+                { nome: "Calabresa Acebolada", descricao: "Porção 300g", preco: 24.90, categoria_nome: "Porções", imagem_url: "", disponivel: true },
                 
                 // Sobremesas
                 { nome: "Pudim", descricao: "Pudim de leite condensado", preco: 12.90, categoria_nome: "Sobremesas", imagem_url: "", disponivel: true },
@@ -607,7 +616,8 @@
             tamanhos_espeto: [
                 { nome: "Pequeno", descricao: "300g", preco: 29.90, ordem: 1, disponivel: true },
                 { nome: "Médio", descricao: "500g", preco: 39.90, ordem: 2, disponivel: true },
-                { nome: "Grande", descricao: "700g", preco: 49.90, ordem: 3, disponivel: true }
+                { nome: "Grande", descricao: "700g", preco: 49.90, ordem: 3, disponivel: true },
+                { nome: "Família", descricao: "1kg", preco: 69.90, ordem: 4, disponivel: true }
             ],
             configuracao: {
                 nome_churrascaria: "CHURRASCO PRIME",
@@ -644,8 +654,8 @@
         
         // Variáveis para o montador de espeto
         let espetoMontado = {
-            tipo: null,
-            precoTipo: 0,
+            tamanho: null,
+            precoTamanho: 0,
             carnes: [],
             acompanhamentos: [],
             molhos: [],
@@ -1577,19 +1587,25 @@
 
         function resetarMontadorEspeto() {
             espetoMontado = {
-                tipo: null,
-                precoTipo: 0,
+                tamanho: null,
+                precoTamanho: 0,
                 carnes: [],
                 acompanhamentos: [],
                 molhos: [],
                 precoTotal: 0
             };
             
-            // Resetar seleção de tipos
+            // Resetar seleção de tamanhos
             document.querySelectorAll('.tamanho-option').forEach(btn => {
                 btn.classList.remove('tamanho-selected');
                 btn.classList.add('bg-orange-50', 'border-orange-200');
             });
+            
+            // Limpar contador de carnes
+            const infoCarnes = document.getElementById('carnes-selecionadas-info');
+            if (infoCarnes) {
+                infoCarnes.innerHTML = '';
+            }
             
             atualizarResumoEspeto();
         }
@@ -1600,12 +1616,12 @@
             
             let html = '';
             TAMANHOS.filter(t => t.disponivel !== false).forEach(t => {
-                const jaSelecionado = espetoMontado.tipo === t.id;
+                const jaSelecionado = espetoMontado.tamanho === t.id;
                 html += `
-                <button onclick="selecionarTipo('${t.id}','${t.preco || 0}','${t.nome}',this)" 
-                        class="tamanho-option p-3 ${jaSelecionado ? 'tamanho-selected' : 'bg-orange-50 border-orange-200'} rounded-xl border text-center">
+                <button onclick="selecionarTamanho('${t.id}','${t.preco || 0}','${t.nome} - ${t.descricao}',this)" 
+                        class="tamanho-option p-2 ${jaSelecionado ? 'tamanho-selected' : 'bg-orange-50 border-orange-200'} rounded-xl border text-center">
                     <div class="text-[10px] font-black uppercase text-gray-500">${t.nome}</div>
-                    <div class="text-sm font-black ${jaSelecionado ? 'text-white' : 'text-red-600'}">R$ ${Number(t.preco || 0).toFixed(2).replace('.',',')}</div>
+                    <div class="text-xs font-black ${jaSelecionado ? 'text-white' : 'text-red-600'}">R$ ${Number(t.preco || 0).toFixed(2).replace('.',',')}</div>
                     <div class="text-[8px] ${jaSelecionado ? 'text-red-200' : 'text-gray-400'}">${t.descricao || ''}</div>
                 </button>`;
             });
@@ -1613,19 +1629,19 @@
             lista.innerHTML = html;
         }
 
-        function selecionarTipo(id, preco, nome, el) {
+        function selecionarTamanho(id, preco, nome, el) {
             // Remover seleção anterior
             document.querySelectorAll('.tamanho-option').forEach(btn => {
                 btn.classList.remove('tamanho-selected');
                 btn.classList.add('bg-orange-50', 'border-orange-200');
             });
             
-            // Selecionar novo tipo
+            // Selecionar novo tamanho
             el.classList.add('tamanho-selected');
             el.classList.remove('bg-orange-50', 'border-orange-200');
             
-            espetoMontado.tipo = { id, nome, preco: parseFloat(preco) };
-            espetoMontado.precoTipo = parseFloat(preco);
+            espetoMontado.tamanho = { id, nome, preco: parseFloat(preco) };
+            espetoMontado.precoTamanho = parseFloat(preco);
             atualizarResumoEspeto();
         }
 
@@ -1643,7 +1659,7 @@
             // Buscar produtos da categoria Carnes
             const carnes = PRODS.filter(p => {
                 return p.categoria_id === catCarnes.id && p.disponivel !== false;
-            });
+            }).sort((a, b) => a.nome.localeCompare(b.nome));
             
             if (carnes.length === 0) {
                 lista.innerHTML = '<div class="text-center text-gray-500 text-sm p-4">Nenhuma carne disponível</div>';
@@ -1656,36 +1672,64 @@
                 html += `
                 <div onclick="toggleCarne('${p.id}','${p.nome.replace(/'/g, "\\'")}',${p.preco || 0},this)" 
                      class="bg-orange-50 p-3 rounded-xl border ${jaSelecionado ? 'border-red-500 bg-orange-100' : 'border-orange-200'} flex justify-between font-bold text-xs uppercase mb-1 shadow-sm hover:bg-orange-100 transition cursor-pointer">
-                    <span>${p.nome} ${jaSelecionado ? '✓' : ''}</span>
-                    <span class="text-[10px] text-gray-500">${p.descricao || ''}</span>
+                    <div>
+                        <span>${p.nome}</span>
+                        <span class="text-[8px] text-gray-500 ml-1">${p.descricao || ''}</span>
+                    </div>
+                    <span class="text-[10px] font-black ${jaSelecionado ? 'text-white' : 'text-red-600'}">+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
                 </div>`;
             });
             
             lista.innerHTML = html;
+            
+            // Atualizar info de carnes selecionadas
+            atualizarInfoCarnes();
         }
 
         function toggleCarne(id, nome, preco, el) {
             const index = espetoMontado.carnes.findIndex(c => c.id === id);
             
             if (index === -1) {
-                // Verificar limite de carnes (máximo 2)
-                if (espetoMontado.carnes.length >= 2) {
-                    alert("Máximo de 2 carnes por espeto!");
+                // Verificar limite de carnes (máximo 3)
+                if (espetoMontado.carnes.length >= 3) {
+                    alert("Máximo de 3 carnes por espeto!");
                     return;
                 }
                 // Adicionar
                 espetoMontado.carnes.push({ id, nome, preco });
                 el.classList.add('border-red-500', 'bg-orange-100');
-                el.querySelector('span:first-child').innerHTML = `${nome} ✓`;
+                // Atualizar texto do span
+                const spanPreco = el.querySelector('span:last-child');
+                if (spanPreco) {
+                    spanPreco.classList.add('text-white');
+                    spanPreco.classList.remove('text-red-600');
+                }
             } else {
                 // Remover
                 espetoMontado.carnes.splice(index, 1);
                 el.classList.remove('border-red-500', 'bg-orange-100');
                 el.classList.add('border-orange-200');
-                el.querySelector('span:first-child').innerHTML = nome;
+                const spanPreco = el.querySelector('span:last-child');
+                if (spanPreco) {
+                    spanPreco.classList.remove('text-white');
+                    spanPreco.classList.add('text-red-600');
+                }
             }
             
+            atualizarInfoCarnes();
             atualizarResumoEspeto();
+        }
+
+        function atualizarInfoCarnes() {
+            const info = document.getElementById('carnes-selecionadas-info');
+            if (info) {
+                const count = espetoMontado.carnes.length;
+                if (count > 0) {
+                    info.innerHTML = `${count} de 3 carnes selecionadas`;
+                } else {
+                    info.innerHTML = '';
+                }
+            }
         }
 
         function carregarAcompanhamentos() {
@@ -1697,7 +1741,8 @@
             
             let acompanhamentos = [];
             if (catAcompanhamentos) {
-                acompanhamentos = PRODS.filter(p => p.categoria_id === catAcompanhamentos.id && p.disponivel !== false);
+                acompanhamentos = PRODS.filter(p => p.categoria_id === catAcompanhamentos.id && p.disponivel !== false)
+                    .sort((a, b) => a.nome.localeCompare(b.nome));
             }
             
             // Se não houver acompanhamentos, mostrar opções padrão
@@ -1705,9 +1750,10 @@
                 // Acompanhamentos padrão
                 const acompanhamentosPadrao = [
                     { id: 'arroz', nome: "Arroz", preco: 8.00 },
-                    { id: 'farofa', nome: "Farofa", preco: 6.00 },
-                    { id: 'vinagrete', nome: "Vinagrete", preco: 5.00 },
-                    { id: 'mandioquinha', nome: "Mandioquinha", preco: 10.00 }
+                    { id: 'farofa', nome: "Farofa", preco: 7.00 },
+                    { id: 'vinagrete', nome: "Vinagrete", preco: 6.00 },
+                    { id: 'mandioquinha', nome: "Mandioquinha", preco: 12.00 },
+                    { id: 'pao-alho', nome: "Pão de alho", preco: 8.00 }
                 ];
                 
                 let html = '';
@@ -1716,8 +1762,8 @@
                     html += `
                     <div onclick="toggleAcompanhamento('${p.id}','${p.nome.replace(/'/g, "\\'")}',${p.preco || 0},this)" 
                          class="bg-orange-50 p-3 rounded-xl border ${jaSelecionado ? 'border-red-500 bg-orange-100' : 'border-orange-200'} flex justify-between font-bold text-xs uppercase mb-1 shadow-sm hover:bg-orange-100 transition cursor-pointer">
-                        <span>${p.nome} ${jaSelecionado ? '✓' : ''}</span>
-                        <span>+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
+                        <span>${p.nome}</span>
+                        <span class="${jaSelecionado ? 'text-white' : 'text-red-600'}">+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
                     </div>`;
                 });
                 
@@ -1732,8 +1778,8 @@
                 html += `
                 <div onclick="toggleAcompanhamento('${p.id}','${p.nome.replace(/'/g, "\\'")}',${p.preco || 0},this)" 
                      class="bg-orange-50 p-3 rounded-xl border ${jaSelecionado ? 'border-red-500 bg-orange-100' : 'border-orange-200'} flex justify-between font-bold text-xs uppercase mb-1 shadow-sm hover:bg-orange-100 transition cursor-pointer">
-                    <span>${p.nome} ${jaSelecionado ? '✓' : ''}</span>
-                    <span>+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
+                    <span>${p.nome}</span>
+                    <span class="${jaSelecionado ? 'text-white' : 'text-red-600'}">+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
                 </div>`;
             });
             
@@ -1747,13 +1793,21 @@
                 // Adicionar
                 espetoMontado.acompanhamentos.push({ id, nome, preco });
                 el.classList.add('border-red-500', 'bg-orange-100');
-                el.querySelector('span:first-child').innerHTML = `${nome} ✓`;
+                const spanPreco = el.querySelector('span:last-child');
+                if (spanPreco) {
+                    spanPreco.classList.add('text-white');
+                    spanPreco.classList.remove('text-red-600');
+                }
             } else {
                 // Remover
                 espetoMontado.acompanhamentos.splice(index, 1);
                 el.classList.remove('border-red-500', 'bg-orange-100');
                 el.classList.add('border-orange-200');
-                el.querySelector('span:first-child').innerHTML = nome;
+                const spanPreco = el.querySelector('span:last-child');
+                if (spanPreco) {
+                    spanPreco.classList.remove('text-white');
+                    spanPreco.classList.add('text-red-600');
+                }
             }
             
             atualizarResumoEspeto();
@@ -1768,17 +1822,18 @@
             
             let molhos = [];
             if (catMolhos) {
-                molhos = PRODS.filter(p => p.categoria_id === catMolhos.id && p.disponivel !== false);
+                molhos = PRODS.filter(p => p.categoria_id === catMolhos.id && p.disponivel !== false)
+                    .sort((a, b) => a.nome.localeCompare(b.nome));
             }
             
             // Se não houver molhos, mostrar opções padrão
             if (molhos.length === 0) {
                 // Molhos padrão
                 const molhosPadrao = [
-                    { id: 'alho', nome: "Molho de alho", preco: 3.00 },
-                    { id: 'barbecue', nome: "Molho barbecue", preco: 3.00 },
-                    { id: 'picante', nome: "Molho picante", preco: 3.00 },
-                    { id: 'chimichurri', nome: "Chimichurri", preco: 4.00 }
+                    { id: 'alho', nome: "Molho de alho", preco: 4.00 },
+                    { id: 'barbecue', nome: "Molho barbecue", preco: 4.00 },
+                    { id: 'picante', nome: "Molho picante", preco: 4.00 },
+                    { id: 'chimichurri', nome: "Chimichurri", preco: 5.00 }
                 ];
                 
                 let html = '';
@@ -1787,8 +1842,8 @@
                     html += `
                     <div onclick="toggleMolho('${p.id}','${p.nome.replace(/'/g, "\\'")}',${p.preco || 0},this)" 
                          class="bg-orange-50 p-3 rounded-xl border ${jaSelecionado ? 'border-red-500 bg-orange-100' : 'border-orange-200'} flex justify-between font-bold text-xs uppercase mb-1 shadow-sm hover:bg-orange-100 transition cursor-pointer">
-                        <span>${p.nome} ${jaSelecionado ? '✓' : ''}</span>
-                        <span>+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
+                        <span>${p.nome}</span>
+                        <span class="${jaSelecionado ? 'text-white' : 'text-red-600'}">+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
                     </div>`;
                 });
                 
@@ -1803,8 +1858,8 @@
                 html += `
                 <div onclick="toggleMolho('${p.id}','${p.nome.replace(/'/g, "\\'")}',${p.preco || 0},this)" 
                      class="bg-orange-50 p-3 rounded-xl border ${jaSelecionado ? 'border-red-500 bg-orange-100' : 'border-orange-200'} flex justify-between font-bold text-xs uppercase mb-1 shadow-sm hover:bg-orange-100 transition cursor-pointer">
-                    <span>${p.nome} ${jaSelecionado ? '✓' : ''}</span>
-                    <span>+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
+                    <span>${p.nome}</span>
+                    <span class="${jaSelecionado ? 'text-white' : 'text-red-600'}">+R$ ${Number(p.preco || 0).toFixed(2).replace('.',',')}</span>
                 </div>`;
             });
             
@@ -1818,13 +1873,21 @@
                 // Adicionar
                 espetoMontado.molhos.push({ id, nome, preco });
                 el.classList.add('border-red-500', 'bg-orange-100');
-                el.querySelector('span:first-child').innerHTML = `${nome} ✓`;
+                const spanPreco = el.querySelector('span:last-child');
+                if (spanPreco) {
+                    spanPreco.classList.add('text-white');
+                    spanPreco.classList.remove('text-red-600');
+                }
             } else {
                 // Remover
                 espetoMontado.molhos.splice(index, 1);
                 el.classList.remove('border-red-500', 'bg-orange-100');
                 el.classList.add('border-orange-200');
-                el.querySelector('span:first-child').innerHTML = nome;
+                const spanPreco = el.querySelector('span:last-child');
+                if (spanPreco) {
+                    spanPreco.classList.remove('text-white');
+                    spanPreco.classList.add('text-red-600');
+                }
             }
             
             atualizarResumoEspeto();
@@ -1832,7 +1895,7 @@
 
         function atualizarResumoEspeto() {
             // Calcular preço total
-            let precoTotal = espetoMontado.precoTipo || 0;
+            let precoTotal = espetoMontado.precoTamanho || 0;
             espetoMontado.carnes.forEach(c => precoTotal += c.preco);
             espetoMontado.acompanhamentos.forEach(a => precoTotal += a.preco);
             espetoMontado.molhos.forEach(m => precoTotal += m.preco);
@@ -1842,9 +1905,9 @@
             // Atualizar UI
             document.getElementById('preco-montador-espeto').innerText = `R$ ${precoTotal.toFixed(2).replace('.',',')}`;
             
-            const tipoNome = espetoMontado.tipo ? espetoMontado.tipo.nome : '--';
-            const tipoPreco = espetoMontado.precoTipo || 0;
-            document.getElementById('resumo-tipo').innerHTML = `Tipo: ${tipoNome} (R$ ${tipoPreco.toFixed(2).replace('.',',')})`;
+            const tamanhoNome = espetoMontado.tamanho ? espetoMontado.tamanho.nome : '--';
+            const tamanhoPreco = espetoMontado.precoTamanho || 0;
+            document.getElementById('resumo-tipo').innerHTML = `Tamanho: ${tamanhoNome} (R$ ${tamanhoPreco.toFixed(2).replace('.',',')})`;
             
             document.getElementById('resumo-carnes').innerHTML = `Carnes: ${espetoMontado.carnes.length > 0 ? espetoMontado.carnes.map(c => c.nome).join(', ') : '--'}`;
             document.getElementById('resumo-acompanhamentos').innerHTML = `Acompanhamentos: ${espetoMontado.acompanhamentos.length > 0 ? espetoMontado.acompanhamentos.map(a => a.nome).join(', ') : '--'}`;
@@ -1853,8 +1916,8 @@
 
         function finalizarEspetoMontado() {
             // Validar
-            if (!espetoMontado.tipo) {
-                alert("Selecione um tipo para o espeto!");
+            if (!espetoMontado.tamanho) {
+                alert("Selecione um tamanho para o espeto!");
                 return;
             }
             
@@ -1865,7 +1928,7 @@
             
             // Criar nome descritivo para o espeto montado
             const carnesText = espetoMontado.carnes.map(c => c.nome).join(' + ');
-            const nomeEspeto = `ESPETO ${espetoMontado.tipo.nome} (${carnesText})`;
+            const nomeEspeto = `ESPETO ${espetoMontado.tamanho.nome} (${carnesText})`;
             
             // Adicionar detalhes extras
             let descricao = "";
@@ -2018,10 +2081,10 @@
         function renderCheckoutTotal() {
             const sub = CARRINHO.reduce((a, b) => a + Number(b.preco || 0), 0);
             
-            // CORREÇÃO: Se modo delivery mas não calculou frete, mostrar 0
+            // Se modo delivery mas não calculou frete, mostrar 0
             const frete = (modoConsumo === 'delivery' && gpsOk) ? tFRETE : 0;
             
-            // Apenas aplicar desconto do cupom, sem desconto automático
+            // Apenas aplicar desconto do cupom
             const final = sub + frete - vCUPOM;
             const totalFinal = Math.max(0, final);
             
@@ -3525,7 +3588,7 @@
         }
 
         async function carregarCarnesParaPromocao() {
-            const container = document.getElementById('promocao-espetos-container');
+            const container = document.getElementById('promocao-carnes-container');
             if (!container) return;
             
             const catCarnes = CATS.find(c => c.nome === "Carnes");
@@ -3569,7 +3632,7 @@
                 const { db, firestore } = getFirebaseRefs();
                 
                 const carnesSelecionadas = [];
-                const checkboxes = document.querySelectorAll('#promocao-espetos-container input[type="checkbox"]:checked');
+                const checkboxes = document.querySelectorAll('#promocao-carnes-container input[type="checkbox"]:checked');
                 checkboxes.forEach(cb => {
                     carnesSelecionadas.push(cb.value);
                 });
@@ -3964,7 +4027,7 @@
         window.fecharModalCarnesPromocao = fecharModalCarnesPromocao;
 
         // Funções do montador de espeto
-        window.selecionarTipo = selecionarTipo;
+        window.selecionarTamanho = selecionarTamanho;
         window.toggleCarne = toggleCarne;
         window.toggleAcompanhamento = toggleAcompanhamento;
         window.toggleMolho = toggleMolho;
