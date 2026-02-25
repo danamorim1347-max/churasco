@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grill Master | Churrascaria & Delivery</title>
+    <title>Churrascaria Grill Master | Sistema Delivery</title>
     
     <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#8B4513">
-    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Grill%20Master%22%2C%22short_name%22%3A%22Grill%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f9f3e9%22%2C%22theme_color%22%3A%22%238B4513%22%7D">
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Churrascaria%20Grill%20Master%22%2C%22short_name%22%3A%22Grill%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f9f3e9%22%2C%22theme_color%22%3A%22%238B4513%22%7D">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Anton&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f9f3e9; -webkit-tap-highlight-color: transparent; overflow-x: hidden; font-size: 14px; }
         .font-anton { font-family: 'Anton', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -37,7 +36,7 @@
         .status-Cancelado { border-left: 12px solid #5d4037 !important; background-color: #efebe9; opacity: 0.5; }
 
         @media print {
-            header, nav, main, #cart-fixed, #modal-checkout, #view-admin, #view-login, #view-acompanhar, #modal-carrinho, #modal-detalhes-produto, #modal-editar-prod, #modal-editar-promocao, #modal-editar-tamanho, #modal-sabores-promocao, button, select, i, .no-print { 
+            header, nav, main, #cart-fixed, #modal-checkout, #modal-montador-pizza, #view-admin, #view-login, #view-acompanhar, #modal-carrinho, #modal-detalhes-produto, #modal-editar-prod, #modal-editar-promocao, #modal-editar-tamanho, #modal-sabores-promocao, button, select, i, .no-print { 
                 display: none !important; 
             }
             #secao-impressao { 
@@ -81,6 +80,21 @@
         .clickable { cursor: pointer; }
         .clickable:hover { transform: translateY(-2px); transition: transform 0.2s; }
         
+        .tamanho-option { transition: all 0.3s; }
+        .tamanho-option:hover { transform: scale(1.05); }
+        .tamanho-selected { background-color: #8B4513 !important; color: white !important; border-color: #8B4513 !important; }
+        
+        .borda-personalizador { border: 3px dashed #d4a373; }
+        
+        .text-xs { font-size: 0.7rem !important; }
+        .text-sm { font-size: 0.8rem !important; }
+        .text-lg { font-size: 1rem !important; }
+        
+        .space-y-4 > * + * { margin-top: 12px !important; }
+        .space-y-2 > * + * { margin-top: 6px !important; }
+        
+        button i.fas { font-size: 12px !important; }
+        
         @keyframes slideDown {
             from { transform: translate(-50%, -100%); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
@@ -105,11 +119,23 @@
             input, select { padding: 12px !important; font-size: 14px !important; }
             #view-admin { padding-bottom: 10px !important; }
             .flex-1.p-4 { padding: 12px 8px !important; font-size: 8px !important; }
+            #modal-montador-pizza { padding: 15px !important; }
+            .tamanho-option { padding: 10px !important; }
             #promocao-container div { padding: 12px !important; }
             #cart-fixed { bottom: 10px !important; padding: 0 10px !important; }
             #cart-fixed button { padding: 10px 14px !important; font-size: 9px !important; border-radius: 20px !important; }
             #modal-checkout .max-h-\[94vh\] { max-height: 85vh !important; }
             #carrinho-itens-list > div { padding: 10px !important; margin-bottom: 6px !important; }
+            #modal-montador-pizza .mb-6 { margin-bottom: 15px !important; }
+            #lista-sabores > div, #lista-bordas > div, #lista-adicionais-pizza > div { padding: 10px !important; margin-bottom: 5px !important; }
+        }
+        
+        @media (max-width: 360px) {
+            .header-banner { height: 150px !important; }
+            #cli-nome { font-size: 1.5rem !important; }
+            #lista-tamanhos-pizza { grid-template-columns: repeat(2, 1fr) !important; }
+            button[onclick="abrirPersonalizadorPrato()"] { padding: 10px !important; font-size: 10px !important; }
+            #cardapio > div { padding: 10px !important; gap: 10px !important; }
         }
         
         #view-cliente, #view-admin, #view-acompanhar { max-width: 100% !important; padding-left: 0; padding-right: 0; }
@@ -122,7 +148,7 @@
         <div class="text-center">
             <div class="text-4xl mb-4">🥩</div>
             <h2 class="text-xl font-anton text-amber-800 mb-2">GRILL MASTER</h2>
-            <div class="text-amber-600 text-sm">Carregando sistema...</div>
+            <div class="text-amber-600 text-sm">Iniciando sistema...</div>
         </div>
     </div>
 
@@ -132,19 +158,19 @@
         <div id="print-content"></div>
     </div>
 
-    <!-- MODAL LOGIN ADM -->
+    <!-- [MODAL LOGIN ADM] -->
     <div id="view-login" class="hidden fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm p-8 rounded-[40px] text-center shadow-2xl">
             <h2 class="text-2xl font-anton uppercase mb-6 text-amber-800">Login Administrativo</h2>
             <input id="login-email" type="email" placeholder="Email ADM" class="w-full p-4 bg-amber-50 rounded-2xl border-none outline-none mb-3 text-sm">
             <input id="login-pass" type="password" placeholder="Senha ADM" class="w-full p-4 bg-amber-50 rounded-2xl border-none outline-none mb-4 text-sm">
-            <button onclick="login()" class="w-full bg-amber-800 text-white p-4 rounded-2xl font-black uppercase shadow-lg hover:bg-amber-900 transition">Entrar no Painel</button>
+            <button onclick="processarLogin()" class="w-full bg-amber-800 text-white p-4 rounded-2xl font-black uppercase shadow-lg hover:bg-amber-900 transition">Entrar no Painel</button>
             <button onclick="fecharLogin()" class="mt-4 text-gray-400 text-xs font-bold uppercase underline">Voltar</button>
             <div id="login-error" class="mt-3 text-red-500 text-xs hidden"></div>
         </div>
     </div>
 
-    <!-- RASTREIO CLIENTE -->
+    <!-- [RASTREIO CLIENTE] -->
     <div id="view-acompanhar" class="hidden w-full max-w-md min-h-screen p-6 text-center bg-white">
         <div class="py-10">
             <h2 class="text-2xl font-anton text-amber-800 mb-6 uppercase">Acompanhe Seu Pedido</h2>
@@ -157,7 +183,7 @@
         </div>
     </div>
 
-    <!-- VISÃO CLIENTE -->
+    <!-- [VISÃO CLIENTE] -->
     <div id="view-cliente" class="w-full max-w-md min-h-screen pb-32 bg-amber-50 shadow-2xl">
         <header class="header-banner">
             <img id="cli-logo" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&auto=format&fit=crop&q=80" alt="Churrascaria">
@@ -168,6 +194,15 @@
             </div>
             <button onclick="abrirLogin()" class="absolute top-6 right-6 text-amber-200 text-xl hover:text-white transition"><i class="fas fa-cog"></i></button>
         </header>
+
+        <div id="promocao-container" class="px-5 mt-4"></div>
+
+        <div class="px-5 mt-4 relative z-10">
+            <button onclick="abrirPersonalizadorPrato()" class="w-full meat-gradient text-white p-5 rounded-[25px] font-black text-[11px] uppercase shadow-xl flex justify-between items-center active:scale-95 transition">
+                <span>🔥 PERSONALIZAR SEU PRATO</span>
+                <i class="fas fa-utensils bg-white/20 p-2 rounded-lg"></i>
+            </button>
+        </div>
 
         <nav id="filtros" class="flex gap-2 p-5 overflow-x-auto no-scrollbar sticky top-0 z-20 bg-amber-50/95 backdrop-blur-sm mt-2 border-b border-amber-200"></nav>
         <main id="cardapio" class="px-5 space-y-3 mt-2 text-black"></main>
@@ -180,63 +215,38 @@
         </div>
     </div>
 
-    <!-- MODAL CARRINHO -->
-    <div id="modal-carrinho" class="fixed inset-0 bg-black/80 z-50 hidden flex items-end justify-center">
-        <div class="bg-white w-full max-w-md rounded-t-[45px] p-7 space-y-4 max-h-[94vh] overflow-y-auto shadow-2xl text-black">
-            <div class="flex justify-between items-center font-anton uppercase text-xl text-amber-800">
-                <h2>Meu Carrinho</h2>
-                <button onclick="fecharCarrinho()" class="text-2xl text-gray-300">✕</button>
-            </div>
-            
-            <div id="carrinho-itens-list" class="space-y-3"></div>
-            
-            <div id="carrinho-vazio" class="text-center py-10">
-                <div class="text-4xl mb-4">🛒</div>
-                <p class="text-gray-500 font-bold">Carrinho vazio</p>
-                <p class="text-gray-400 text-sm">Adicione produtos para continuar</p>
-            </div>
-            
-            <div class="bg-gray-900 text-white p-6 rounded-[35px] shadow-xl font-black italic uppercase">
-                <div class="flex justify-between text-2xl text-amber-400 tracking-tighter">
-                    <span>Total:</span>
-                    <span id="carrinho-total">R$ 0,00</span>
-                </div>
-            </div>
-            
-            <div class="flex gap-2">
-                <button onclick="fecharCarrinho()" class="flex-1 bg-gray-200 text-gray-800 py-4 rounded-[25px] font-bold uppercase text-sm">Continuar Comprando</button>
-                <button onclick="checkout()" class="flex-1 bg-green-600 text-white py-4 rounded-[25px] font-bold uppercase text-sm hover:bg-green-700 transition">Finalizar Pedido</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CHECKOUT -->
+    <!-- [MODAL CHECKOUT] -->
     <div id="modal-checkout" class="fixed inset-0 bg-black/80 z-50 hidden flex items-end justify-center">
         <div class="bg-white w-full max-w-md rounded-t-[45px] p-7 space-y-4 max-h-[94vh] overflow-y-auto shadow-2xl text-black">
-            <div class="flex justify-between items-center font-anton uppercase text-xl text-amber-800">
-                <h2>Finalizar Pedido</h2>
-                <button onclick="fecharCheckout()" class="text-2xl text-gray-300">✕</button>
-            </div>
+            <div class="flex justify-between items-center font-anton uppercase text-xl text-amber-800"><h2>Finalizar Pedido</h2><button onclick="fecharCheckout()" class="text-2xl text-gray-300">✕</button></div>
             
+            <div class="grid grid-cols-3 gap-2 p-1 bg-amber-50 rounded-2xl">
+                <button onclick="setModoConsumo('delivery')" id="btn-m-delivery" class="p-3 text-[9px] font-black rounded-xl bg-white shadow-sm border border-amber-200 text-black uppercase">Delivery</button>
+                <button onclick="setModoConsumo('retirada')" id="btn-m-retirada" class="p-3 text-[9px] font-black rounded-xl text-gray-400 uppercase">Retirada</button>
+                <button onclick="setModoConsumo('local')" id="btn-m-local" class="p-3 text-[9px] font-black rounded-xl text-gray-400 uppercase tracking-tighter">No Local</button>
+            </div>
+
             <div id="checkout-itens-list" class="bg-amber-50 p-4 rounded-3xl border border-amber-100 space-y-2 text-[10px] font-bold text-gray-600 italic"></div>
 
             <div class="space-y-2.5">
-                <input id="f-nome" type="text" placeholder="Seu Nome Completo" class="w-full p-4 bg-amber-50 rounded-2xl border-none outline-none font-bold text-sm">
-                <input id="f-whatsapp" type="tel" placeholder="WhatsApp (Ex: 85999999999)" class="w-full p-4 bg-amber-50 rounded-2xl border-none outline-none font-bold text-sm">
+                <input id="f-nome" type="text" placeholder="Seu Nome Completo" class="w-full p-4 bg-amber-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
+                <input id="f-whatsapp" type="tel" placeholder="WhatsApp (Ex: 85999999999)" class="w-full p-4 bg-amber-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
                 
-                <div id="area-endereco">
+                <div id="area-gps-cli" class="space-y-2">
+                    <button id="btn-gps-cli" onclick="obterGPSCliente()" class="w-full bg-gray-900 text-amber-400 p-4 rounded-2xl text-[10px] font-black uppercase shadow-lg tracking-widest italic">📍 CALCULAR FRETE POR GPS *</button>
+                    <div id="res-km" class="hidden bg-green-50 p-3 rounded-2xl flex justify-between text-[10px] font-black text-green-700 border border-green-100"><span id="dist-txt">0.0 km</span><span id="taxa-txt">R$ 0,00</span></div>
                     <div class="grid grid-cols-4 gap-2">
                         <input id="f-rua" type="text" placeholder="Rua" class="col-span-3 p-4 bg-amber-50 rounded-2xl outline-none text-sm">
-                        <input id="f-num" type="text" placeholder="Nº" class="col-span-1 p-4 bg-amber-50 rounded-2xl outline-none text-center text-sm">
+                        <input id="f-num" type="text" placeholder="Nº" class="col-span-1 p-4 bg-amber-50 rounded-2xl outline-none text-center text-sm shadow-inner">
                     </div>
-                    <input id="f-bairro" type="text" placeholder="Bairro" class="w-full p-4 bg-amber-50 rounded-2xl outline-none text-sm mt-2">
+                    <input id="f-bairro" type="text" placeholder="Bairro" class="w-full p-4 bg-amber-50 rounded-2xl outline-none text-sm shadow-inner">
                 </div>
                 
-                <input id="f-comp" type="text" placeholder="Complemento / Referência" class="w-full p-4 bg-amber-50 rounded-2xl outline-none text-sm">
+                <input id="f-comp" type="text" placeholder="Ponto de referência / Apartamento / Obs" class="w-full p-4 bg-amber-50 rounded-2xl outline-none text-sm shadow-inner">
 
                 <div class="flex gap-2">
-                    <input id="f-cupom" type="text" placeholder="Cupom" class="flex-1 p-4 bg-amber-50 rounded-2xl outline-none text-sm uppercase font-black">
-                    <button onclick="aplicarCupom()" class="bg-amber-200 text-amber-800 px-4 rounded-2xl font-black text-[10px] uppercase">Validar</button>
+                    <input id="f-cupom" type="text" placeholder="Código Cupom" class="flex-1 p-4 bg-amber-50 rounded-2xl outline-none text-sm uppercase font-black shadow-inner">
+                    <button onclick="aplicarCupom()" class="bg-amber-200 text-amber-800 px-4 rounded-2xl font-black text-[10px] uppercase tracking-tighter hover:bg-amber-300 transition">Validar</button>
                 </div>
 
                 <select id="f-pag" class="w-full p-4 bg-amber-50 rounded-2xl font-bold border text-sm">
@@ -248,50 +258,56 @@
             </div>
 
             <div class="bg-gray-900 text-white p-6 rounded-[35px] shadow-xl font-black italic uppercase">
-                <div id="div-desconto-txt" class="hidden flex justify-between text-[10px] text-green-400 mb-1">
-                    <span>Desconto Cupom:</span><span id="txt-val-cupom">-R$ 0,00</span>
-                </div>
-                <div class="flex justify-between text-2xl text-amber-400 tracking-tighter">
-                    <span>Total Final:</span>
-                    <span id="res-total">R$ 0,00</span>
-                </div>
+                <div id="div-desconto-txt" class="hidden flex justify-between text-[10px] text-green-400 mb-1"><span>Desconto Aplicado:</span><span id="txt-val-cupom">- R$ 0,00</span></div>
+                <div class="flex justify-between text-2xl text-amber-400 tracking-tighter"><span>Total Final:</span><span id="res-total">R$ 0,00</span></div>
+                <div class="text-[10px] text-amber-300 mt-2">✓ Entrega 40-50 min ✓ Pedido mínimo R$ 35</div>
             </div>
-            <button onclick="finalizarPedido()" class="w-full bg-green-600 text-white py-6 rounded-[25px] font-black uppercase tracking-widest border-b-4 border-green-800 shadow-xl">🚀 FINALIZAR PEDIDO</button>
+            <button onclick="enviarPedido()" id="btn-final-zap" class="w-full bg-green-600 text-white py-6 rounded-[25px] font-black uppercase tracking-widest border-b-4 border-green-800 shadow-xl transition-all active:scale-95 hover:bg-green-700">🚀 FINALIZAR PEDIDO NO WHATSAPP</button>
         </div>
     </div>
 
-    <!-- PAINEL ADM -->
+    <!-- [PAINEL ADM] -->
     <div id="view-admin" class="hidden w-full max-w-4xl mx-auto min-h-screen pb-20 bg-amber-50">
         <header class="bg-gray-900 text-amber-400 p-4 flex justify-between items-center sticky top-0 z-50">
             <h1 class="font-anton text-amber-400 uppercase tracking-tighter text-xl">PAINEL GRILL MASTER</h1>
             <div class="flex items-center gap-3">
                 <span id="admin-user" class="text-[10px] text-amber-300"></span>
-                <button onclick="logout()" class="text-[9px] font-bold border border-amber-400 text-amber-400 px-3 py-1 rounded-full uppercase hover:bg-amber-400 hover:text-gray-900 transition">Sair</button>
+                <button onclick="sairAdmin()" class="text-[9px] font-bold border border-amber-400 text-amber-400 px-3 py-1 rounded-full uppercase hover:bg-amber-400 hover:text-gray-900 transition">Sair</button>
             </div>
         </header>
-        
         <div class="flex bg-white border-b border-amber-200 sticky top-14 z-40 overflow-x-auto no-scrollbar shadow-sm">
-            <button onclick="ativarAba('pedidos')" id="tab-pedidos" class="flex-1 p-4 font-bold text-[9px] tab-active uppercase">📋 Pedidos</button>
-            <button onclick="ativarAba('produtos')" id="tab-produtos" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">🥩 Cardápio</button>
-            <button onclick="ativarAba('categorias')" id="tab-categorias" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">📁 Categorias</button>
-            <button onclick="ativarAba('cupons')" id="tab-cupons" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">🎫 Cupons</button>
-            <button onclick="ativarAba('config')" id="tab-config" class="flex-1 p-4 font-bold text-[9px] uppercase whitespace-nowrap tracking-tighter text-gray-400">⚙️ Config</button>
-            <button onclick="sincronizarCardapio()" class="flex-1 p-4 font-bold text-[9px] uppercase text-green-600 hover:text-green-700">🔄 Sincronizar</button>
+            <button onclick="switchTab('pedidos')" id="tab-pedidos" class="flex-1 p-4 font-bold text-[9px] tab-active uppercase">📋 Pedidos</button>
+            <button onclick="switchTab('produtos')" id="tab-produtos" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">🥩 Cardápio</button>
+            <button onclick="switchTab('categorias')" id="tab-categorias" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">📁 Categorias</button>
+            <button onclick="switchTab('cupons')" id="tab-cupons" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">🎫 Cupons</button>
+            <button onclick="switchTab('config')" id="tab-config" class="flex-1 p-4 font-bold text-[9px] uppercase whitespace-nowrap tracking-tighter text-gray-400">⚙️ Config</button>
+            <button onclick="switchTab('promocoes')" id="tab-promocoes" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">🔥 Promoções</button>
+            <button onclick="switchTab('tamanhos')" id="tab-tamanhos" class="flex-1 p-4 font-bold text-[9px] uppercase text-gray-400">📏 Porções</button>
+            <button onclick="switchTab('especiais')" id="tab-especiais" class="flex-1 p-4 font-bold text-[9px] uppercase whitespace-nowrap tracking-tighter text-gray-400">🔧 Especiais</button>
         </div>
-        
         <div id="adm-content" class="p-4 space-y-4">
-            <div id="sec-pedidos" class="space-y-4 text-black"></div>
+            <div id="sec-pedidos" class="space-y-4 text-black"><div class="text-center py-10"><div class="text-amber-400">Carregando pedidos...</div></div></div>
             <div id="sec-produtos" class="hidden space-y-4 text-black"></div>
             <div id="sec-categorias" class="hidden space-y-4 text-black"></div>
             <div id="sec-cupons" class="hidden space-y-4 text-black"></div>
             <div id="sec-config" class="hidden space-y-4 text-black"></div>
+            <div id="sec-promocoes" class="hidden space-y-4 text-black"></div>
+            <div id="sec-tamanhos" class="hidden space-y-4 text-black"></div>
+            <div id="sec-especiais" class="hidden space-y-4 text-black"></div>
         </div>
+    </div>
+
+    <!-- Botão para sincronizar cardápio -->
+    <div id="btn-sync-cardapio" class="hidden fixed bottom-20 right-4 z-50">
+        <button onclick="sincronizarCardapio()" class="bg-amber-800 text-white p-3 rounded-full shadow-lg hover:bg-amber-900 transition flex items-center gap-2 text-xs font-black uppercase">
+            <i class="fas fa-utensils"></i> Cardápio Churrascaria
+        </button>
     </div>
 
     <!-- Modal de progresso -->
     <div id="modal-progresso" class="hidden fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-[40px] p-6 shadow-2xl text-center">
-            <h3 class="font-anton text-xl text-amber-800 mb-4">Processando</h3>
+            <h3 class="font-anton text-xl text-amber-800 mb-4">Sincronizando Cardápio</h3>
             <div class="mb-4">
                 <div class="w-full bg-gray-200 rounded-full h-4">
                     <div id="barra-progresso" class="bg-amber-800 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
@@ -302,17 +318,15 @@
         </div>
     </div>
 
-    <!-- FIREBASE SDK -->
+    <!-- INICIALIZAÇÃO DO FIREBASE -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { 
-            getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, 
-            query, where, orderBy, limit, onSnapshot, serverTimestamp 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { 
-            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
 
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCA-QxA-iOmdAaLGow8-iCYEa0TFyt_SnM",
             authDomain: "churrasco-8a27a.firebaseapp.com",
@@ -323,21 +337,42 @@
             measurementId: "G-RXNNTH3DEN"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const analytics = getAnalytics(app);
 
+        // Make available globally
         window.db = db;
         window.auth = auth;
+        window.analytics = analytics;
+        window.firebaseApp = app;
         
-        window.firebase = {
-            addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, collection,
-            query, where, orderBy, limit, onSnapshot, serverTimestamp,
-            createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged
-        };
+        // Export firestore functions
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.orderBy = orderBy;
+        window.onSnapshot = onSnapshot;
+        
+        // Export auth functions
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
 
-        console.log("✅ Firebase pronto");
-        window.dispatchEvent(new CustomEvent('firebaseReady'));
+        console.log("✅ Firebase inicializado com sucesso!");
+        
+        // Iniciar a aplicação
+        window.dispatchEvent(new Event('firebase-ready'));
     </script>
 
     <script>
@@ -345,94 +380,60 @@
     let PRODS = [];
     let CATS = [];
     let CARRINHO = [];
+    let CONFIG = {
+        nome_pizzaria: "GRILL MASTER",
+        loja_aberta: true,
+        pedido_minimo: 35,
+        taxa_base: 6,
+        preco_km: 2.5
+    };
     let CUPONS = [];
-    let PEDIDOS = [];
+    let TAMANHOS = [];
     let curCat = 'todos';
-    let usuarioAtual = null;
-    let totalPedido = 0;
-    let desconto = 0;
-    let cupomAplicado = null;
-
-    // ==================== INICIALIZAÇÃO ====================
-    window.addEventListener('firebaseReady', async () => {
-        document.getElementById('initial-loading').style.display = 'none';
-        await carregarCategorias();
-        await carregarProdutos();
-        await carregarCupons();
-        
-        // Verificar se usuário está logado
-        firebase.onAuthStateChanged(window.auth, (user) => {
-            if (user) {
-                usuarioAtual = user;
-                document.getElementById('admin-user').innerText = user.email;
-            }
-        });
-    });
+    let isAdmin = false;
+    let currentUser = null;
 
     // ==================== FUNÇÕES DE UTILIDADE ====================
-    function notificar(titulo, msg, tipo = 'info') {
+    function mostrarNotificacao(titulo, mensagem, tipo = 'info') {
         const div = document.createElement('div');
         div.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-[2000] px-6 py-4 rounded-2xl shadow-2xl text-white font-bold text-sm max-w-[90%] text-center animate-slideDown ${
             tipo === 'sucesso' ? 'bg-green-600' : tipo === 'erro' ? 'bg-red-600' : 'bg-amber-800'
         }`;
-        div.innerHTML = `<div class="font-black mb-1">${titulo}</div><div>${msg}</div>`;
+        div.innerHTML = `<div class="font-black mb-1">${titulo}</div><div>${mensagem}</div>`;
         document.body.appendChild(div);
-        setTimeout(() => div.remove(), 3000);
+        setTimeout(() => {
+            div.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+            setTimeout(() => div.remove(), 500);
+        }, 3000);
     }
 
-    function prog(titulo) {
+    function mostrarProgresso(titulo) {
         document.getElementById('modal-progresso').classList.remove('hidden');
         document.getElementById('status-progresso').innerText = titulo;
         document.getElementById('barra-progresso').style.width = '0%';
         document.getElementById('detalhe-progresso').innerText = '';
     }
 
-    function progAtualizar(p, status, det = '') {
-        document.getElementById('barra-progresso').style.width = p + '%';
+    function atualizarProgresso(porcentagem, status, detalhe = '') {
+        document.getElementById('barra-progresso').style.width = porcentagem + '%';
         document.getElementById('status-progresso').innerText = status;
-        document.getElementById('detalhe-progresso').innerText = det;
+        document.getElementById('detalhe-progresso').innerText = detalhe;
     }
 
-    function progEsconder() {
+    function esconderProgresso() {
         document.getElementById('modal-progresso').classList.add('hidden');
     }
 
-    // ==================== FIREBASE - LEITURAS ====================
-    async function carregarCategorias() {
-        try {
-            const q = query(collection(window.db, "categorias"), orderBy("ordem"));
-            const snapshot = await firebase.getDocs(q);
-            CATS = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderFiltros();
-        } catch (e) {
-            console.error("Erro ao carregar categorias:", e);
-        }
-    }
+    // ==================== FUNÇÕES DE LOGIN ====================
+    window.abrirLogin = function() {
+        document.getElementById('view-login').classList.remove('hidden');
+    };
 
-    async function carregarProdutos() {
-        try {
-            const snapshot = await firebase.getDocs(collection(window.db, "produtos"));
-            PRODS = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderCardapio();
-        } catch (e) {
-            console.error("Erro ao carregar produtos:", e);
-        }
-    }
+    window.fecharLogin = function() {
+        document.getElementById('view-login').classList.add('hidden');
+    };
 
-    async function carregarCupons() {
-        try {
-            const snapshot = await firebase.getDocs(collection(window.db, "cupons"));
-            CUPONS = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        } catch (e) {
-            console.error("Erro ao carregar cupons:", e);
-        }
-    }
-
-    // ==================== LOGIN ====================
-    window.abrirLogin = () => document.getElementById('view-login').classList.remove('hidden');
-    window.fecharLogin = () => document.getElementById('view-login').classList.add('hidden');
-
-    window.login = async function() {
+    window.processarLogin = async function() {
         const email = document.getElementById('login-email').value;
         const senha = document.getElementById('login-pass').value;
         const errorDiv = document.getElementById('login-error');
@@ -444,46 +445,51 @@
         }
 
         try {
-            const userCredential = await firebase.signInWithEmailAndPassword(window.auth, email, senha);
-            usuarioAtual = userCredential.user;
+            const userCredential = await signInWithEmailAndPassword(window.auth, email, senha);
+            currentUser = userCredential.user;
+            isAdmin = true;
             
             document.getElementById('view-login').classList.add('hidden');
             document.getElementById('view-cliente').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
-            document.getElementById('admin-user').innerText = usuarioAtual.email;
+            document.getElementById('admin-user').innerText = currentUser.email;
             
-            notificar('Login', 'Bem-vindo ao painel!', 'sucesso');
-            await carregarPedidos();
+            mostrarNotificacao('Login', 'Bem-vindo ao painel administrativo!', 'sucesso');
+            
+            // Mostrar botão de sincronização
+            document.getElementById('btn-sync-cardapio').classList.remove('hidden');
+            
         } catch (error) {
             errorDiv.textContent = "Erro: " + error.message;
             errorDiv.classList.remove('hidden');
         }
     };
 
-    window.logout = function() {
-        firebase.signOut(window.auth).then(() => {
-            usuarioAtual = null;
+    window.sairAdmin = function() {
+        signOut(window.auth).then(() => {
+            isAdmin = false;
+            currentUser = null;
             document.getElementById('view-admin').classList.add('hidden');
             document.getElementById('view-cliente').classList.remove('hidden');
-            notificar('Logout', 'Sessão encerrada', 'info');
+            document.getElementById('btn-sync-cardapio').classList.add('hidden');
         });
     };
 
-    // ==================== CARDÁPIO ====================
+    // ==================== FUNÇÕES DO CARDÁPIO ====================
     function renderFiltros() {
         const div = document.getElementById('filtros');
         if (!div) return;
         
-        let html = `<button onclick="filtrar('todos')" class="whitespace-nowrap px-4 py-2 text-[10px] font-black uppercase border rounded-full ${curCat === 'todos' ? 'cat-active' : 'border-amber-200 text-gray-400'}">Todos</button>`;
+        let html = `<button onclick="filtrarCardapio('todos')" class="whitespace-nowrap px-4 py-2 text-[10px] font-black uppercase border rounded-full ${curCat === 'todos' ? 'cat-active' : 'border-amber-200 text-gray-400'}">Todos</button>`;
         
-        CATS.forEach(c => {
-            html += `<button onclick="filtrar('${c.id}')" class="whitespace-nowrap px-4 py-2 text-[10px] font-black uppercase border rounded-full ${curCat === c.id ? 'cat-active' : 'border-amber-200 text-gray-400'}">${c.nome}</button>`;
+        CATS.filter(c => c.tipo === 'categoria').forEach(c => {
+            html += `<button onclick="filtrarCardapio('${c.id}')" class="whitespace-nowrap px-4 py-2 text-[10px] font-black uppercase border rounded-full ${curCat === c.id ? 'cat-active' : 'border-amber-200 text-gray-400'}">${c.nome}</button>`;
         });
         
         div.innerHTML = html;
     }
 
-    window.filtrar = function(catId) {
+    window.filtrarCardapio = function(catId) {
         curCat = catId;
         renderFiltros();
         renderCardapio();
@@ -493,18 +499,18 @@
         const div = document.getElementById('cardapio');
         if (!div) return;
         
-        const prods = curCat === 'todos' 
+        const produtosFiltrados = curCat === 'todos' 
             ? PRODS.filter(p => p.disponivel !== false)
             : PRODS.filter(p => p.categoria_id === curCat && p.disponivel !== false);
         
-        if (prods.length === 0) {
+        if (produtosFiltrados.length === 0) {
             div.innerHTML = '<div class="text-center py-10 text-gray-400 text-sm">Nenhum produto disponível.</div>';
             return;
         }
         
         let html = '';
-        prods.forEach(p => {
-            const cat = CATS.find(c => c.id === p.categoria_id);
+        produtosFiltrados.forEach(p => {
+            const categoria = CATS.find(c => c.id === p.categoria_id);
             html += `
             <div class="bg-white rounded-[20px] meat-shadow p-4 flex gap-4 border border-amber-100 items-center">
                 <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
@@ -515,7 +521,7 @@
                     <p class="text-[9px] text-gray-400 line-clamp-1 mb-1">${p.descricao || ''}</p>
                     <div class="flex justify-between items-center mt-2">
                         <span class="text-amber-800 font-black text-md">R$ ${Number(p.preco).toFixed(2).replace('.',',')}</span>
-                        <button onclick="addCarrinho('${p.id}')" class="bg-amber-800 text-white w-8 h-8 rounded-xl font-black text-xl shadow hover:bg-amber-900">+</button>
+                        <button onclick="adicionarAoCarrinho('${p.id}')" class="bg-amber-800 text-white w-8 h-8 rounded-xl font-black text-xl shadow hover:bg-amber-900">+</button>
                     </div>
                 </div>
             </div>`;
@@ -524,378 +530,220 @@
         div.innerHTML = html;
     }
 
-    window.addCarrinho = function(id) {
-        const p = PRODS.find(p => p.id === id);
-        if (!p) return;
+    window.adicionarAoCarrinho = function(id) {
+        const produto = PRODS.find(p => p.id === id);
+        if (!produto) return;
         
         CARRINHO.push({
-            id: p.id,
-            nome: p.nome,
-            preco: p.preco,
-            descricao: p.descricao
+            id: produto.id,
+            nome: produto.nome,
+            preco: produto.preco,
+            descricao: produto.descricao
         });
         
         atualizarCarrinho();
-        notificar('Adicionado', `${p.nome} adicionado!`, 'sucesso');
+        mostrarNotificacao('Adicionado', `${produto.nome} adicionado ao carrinho!`, 'sucesso');
     };
 
     function atualizarCarrinho() {
-        const total = CARRINHO.reduce((acc, i) => acc + i.preco, 0);
+        const total = CARRINHO.reduce((acc, item) => acc + item.preco, 0);
         document.getElementById('cart-total-display').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
-        document.getElementById('cart-fixed').classList.toggle('hidden', CARRINHO.length === 0);
+        
+        if (CARRINHO.length > 0) {
+            document.getElementById('cart-fixed').classList.remove('hidden');
+        } else {
+            document.getElementById('cart-fixed').classList.add('hidden');
+        }
     }
 
     window.abrirCarrinho = function() {
-        if (CARRINHO.length === 0) {
-            document.getElementById('carrinho-vazio').classList.remove('hidden');
-            document.getElementById('carrinho-itens-list').innerHTML = '';
-        } else {
-            document.getElementById('carrinho-vazio').classList.add('hidden');
-            
-            let html = '';
-            let total = 0;
-            
-            CARRINHO.forEach((item, idx) => {
-                total += item.preco;
-                html += `
-                <div class="bg-white p-3 rounded-xl border border-amber-100 flex justify-between items-center">
-                    <div>
-                        <div class="font-bold text-xs">${item.nome}</div>
-                        <div class="text-amber-800 font-black text-sm">R$ ${item.preco.toFixed(2).replace('.',',')}</div>
-                    </div>
-                    <button onclick="removerCarrinho(${idx})" class="text-red-500 text-xs"><i class="fas fa-trash"></i></button>
-                </div>`;
-            });
-            
-            document.getElementById('carrinho-itens-list').innerHTML = html;
-            document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
-        }
+        let html = '';
+        let total = 0;
         
+        CARRINHO.forEach((item, index) => {
+            total += item.preco;
+            html += `
+            <div class="bg-white p-3 rounded-xl border border-amber-100 flex justify-between items-center">
+                <div>
+                    <div class="font-bold text-xs">${item.nome}</div>
+                    <div class="text-amber-800 font-black text-sm">R$ ${item.preco.toFixed(2).replace('.',',')}</div>
+                </div>
+                <button onclick="removerDoCarrinho(${index})" class="text-red-500 text-xs"><i class="fas fa-trash"></i></button>
+            </div>`;
+        });
+        
+        document.getElementById('carrinho-itens-list').innerHTML = html;
+        document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
         document.getElementById('modal-carrinho').classList.remove('hidden');
     };
 
-    window.removerCarrinho = function(idx) {
-        CARRINHO.splice(idx, 1);
+    window.removerDoCarrinho = function(index) {
+        CARRINHO.splice(index, 1);
         atualizarCarrinho();
         abrirCarrinho();
     };
 
-    window.fecharCarrinho = () => document.getElementById('modal-carrinho').classList.add('hidden');
-
-    // ==================== CHECKOUT ====================
-    window.checkout = function() {
-        fecharCarrinho();
-        
-        let html = '';
-        totalPedido = 0;
-        
-        CARRINHO.forEach(item => {
-            totalPedido += item.preco;
-            html += `
-            <div class="flex justify-between border-b border-amber-100 pb-2">
-                <span class="font-black text-xs">${item.nome}</span>
-                <span class="text-amber-800 font-black">R$ ${item.preco.toFixed(2).replace('.',',')}</span>
-            </div>`;
-        });
-        
-        document.getElementById('checkout-itens-list').innerHTML = html;
-        document.getElementById('res-total').innerText = `R$ ${totalPedido.toFixed(2).replace('.',',')}`;
-        
-        document.getElementById('f-pag').addEventListener('change', (e) => {
-            document.getElementById('div-troco').classList.toggle('hidden', e.target.value !== 'Dinheiro');
-        });
-        
-        document.getElementById('modal-checkout').classList.remove('hidden');
+    window.fecharCarrinho = function() {
+        document.getElementById('modal-carrinho').classList.add('hidden');
     };
 
-    window.fecharCheckout = () => document.getElementById('modal-checkout').classList.add('hidden');
-
-    window.aplicarCupom = function() {
-        const codigo = document.getElementById('f-cupom').value.toUpperCase().trim();
-        if (!codigo) return;
-        
-        const cupom = CUPONS.find(c => c.codigo === codigo && c.ativo !== false);
-        if (!cupom) {
-            notificar('Erro', 'Cupom inválido', 'erro');
-            return;
-        }
-        
-        desconto = cupom.valor || 0;
-        cupomAplicado = cupom;
-        
-        document.getElementById('div-desconto-txt').classList.remove('hidden');
-        document.getElementById('txt-val-cupom').innerText = `-R$ ${desconto.toFixed(2).replace('.',',')}`;
-        
-        const final = Math.max(0, totalPedido - desconto);
-        document.getElementById('res-total').innerText = `R$ ${final.toFixed(2).replace('.',',')}`;
-        
-        notificar('Cupom', `Desconto de R$ ${desconto.toFixed(2).replace('.',',')} aplicado!`, 'sucesso');
-    };
-
-    window.finalizarPedido = async function() {
-        const nome = document.getElementById('f-nome').value.trim();
-        const whatsapp = document.getElementById('f-whatsapp').value.replace(/\D/g, '');
-        
-        if (!nome || whatsapp.length < 10) {
-            notificar('Erro', 'Preencha nome e WhatsApp corretamente', 'erro');
-            return;
-        }
-
-        const rua = document.getElementById('f-rua').value.trim();
-        const numero = document.getElementById('f-num').value.trim();
-        const bairro = document.getElementById('f-bairro').value.trim();
-        
-        if (!rua || !numero || !bairro) {
-            notificar('Erro', 'Preencha o endereço completo', 'erro');
-            return;
-        }
-
-        prog('Enviando pedido...');
-
-        try {
-            const pedido = {
-                cliente: nome,
-                whatsapp: whatsapp,
-                endereco: `${rua}, ${numero} - ${bairro}`,
-                complemento: document.getElementById('f-comp').value || '',
-                pagamento: document.getElementById('f-pag').value,
-                troco: document.getElementById('f-troco').value || 'Não solicitado',
-                itens: CARRINHO.map(i => ({ nome: i.nome, preco: i.preco })),
-                subtotal: totalPedido,
-                desconto: desconto,
-                total: Math.max(0, totalPedido - desconto),
-                cupom: cupomAplicado?.codigo,
-                status: 'Novo',
-                created_at: new Date().toISOString()
-            };
-
-            const docRef = await firebase.addDoc(collection(window.db, "pedidos"), pedido);
-            
-            notificar('Sucesso', 'Pedido realizado com sucesso!', 'sucesso');
-            
-            CARRINHO = [];
-            desconto = 0;
-            cupomAplicado = null;
-            atualizarCarrinho();
-            fecharCheckout();
-            
-            // Redirecionar para acompanhamento
-            window.location.href = `?pedido=${docRef.id}`;
-            
-        } catch (error) {
-            console.error("Erro ao salvar pedido:", error);
-            progEsconder();
-            notificar('Erro', 'Falha ao enviar pedido', 'erro');
-        }
-    };
-
-    // ==================== ADMIN ====================
-    window.ativarAba = function(aba) {
-        document.querySelectorAll('[id^="tab-"]').forEach(t => {
-            t.classList.remove('tab-active');
-            t.classList.add('text-gray-400');
-        });
-        document.getElementById(`tab-${aba}`).classList.add('tab-active');
-        document.getElementById(`tab-${aba}`).classList.remove('text-gray-400');
-        
-        document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('hidden'));
-        document.getElementById(`sec-${aba}`)?.classList.remove('hidden');
-        
-        if (aba === 'pedidos') carregarPedidos();
-        if (aba === 'produtos') renderProdutosAdmin();
-        if (aba === 'categorias') renderCategoriasAdmin();
-        if (aba === 'cupons') renderCuponsAdmin();
-        if (aba === 'config') renderConfigAdmin();
-    };
-
-    async function carregarPedidos() {
-        try {
-            const q = query(collection(window.db, "pedidos"), orderBy("created_at", "desc"), limit(50));
-            const snapshot = await firebase.getDocs(q);
-            PEDIDOS = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            let html = '';
-            PEDIDOS.forEach(p => {
-                const data = new Date(p.created_at).toLocaleString('pt-BR');
-                html += `
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-8 border-amber-800">
-                    <div class="flex justify-between mb-2">
-                        <span class="font-bold">${p.cliente}</span>
-                        <span class="text-xs bg-amber-100 px-2 py-1 rounded-full">${p.status}</span>
-                    </div>
-                    <div class="text-xs text-gray-500 mb-2">${data}</div>
-                    <div class="text-xs mb-2">${p.itens.length} itens • Total: R$ ${p.total.toFixed(2).replace('.',',')}</div>
-                    <div class="flex gap-2">
-                        <select onchange="atualizarStatus('${p.id}', this.value)" class="text-xs bg-gray-100 p-1 rounded">
-                            <option value="Novo" ${p.status === 'Novo' ? 'selected' : ''}>Novo</option>
-                            <option value="Preparando" ${p.status === 'Preparando' ? 'selected' : ''}>Preparando</option>
-                            <option value="Saiu" ${p.status === 'Saiu' ? 'selected' : ''}>Saiu</option>
-                            <option value="Entregue" ${p.status === 'Entregue' ? 'selected' : ''}>Entregue</option>
-                        </select>
-                        <button onclick="imprimirPedido('${p.id}')" class="text-xs bg-gray-200 px-2 py-1 rounded">🖨️</button>
-                    </div>
-                </div>`;
-            });
-            
-            document.getElementById('sec-pedidos').innerHTML = html || '<div class="text-center py-10 text-gray-400">Nenhum pedido encontrado</div>';
-        } catch (e) {
-            console.error("Erro ao carregar pedidos:", e);
-        }
-    }
-
-    window.atualizarStatus = async function(id, status) {
-        try {
-            await firebase.updateDoc(doc(window.db, "pedidos", id), { status });
-            notificar('Status', `Pedido atualizado para ${status}`, 'sucesso');
-            carregarPedidos();
-        } catch (e) {
-            notificar('Erro', 'Falha ao atualizar status', 'erro');
-        }
-    };
-
-    // ==================== SINCRONIZAR CARDÁPIO ====================
+    // ==================== FUNÇÃO DE SINCRONIZAÇÃO DO CARDÁPIO ====================
     window.sincronizarCardapio = async function() {
-        if (!usuarioAtual) {
-            notificar('Erro', 'Faça login primeiro', 'erro');
+        if (!window.db) {
+            mostrarNotificacao('Erro', 'Firebase não disponível', 'erro');
             return;
         }
 
-        if (!confirm('Isso irá recriar todo o cardápio. Continuar?')) return;
+        mostrarProgresso('Preparando sincronização...');
 
-        prog('Sincronizando cardápio...');
+        if (!confirm('Isso irá apagar TODOS os produtos e categorias atuais e criar o novo cardápio. Continuar?')) {
+            esconderProgresso();
+            return;
+        }
 
         try {
             // Apagar dados existentes
-            progAtualizar(10, 'Apagando dados antigos...');
-            
-            const produtosSnap = await firebase.getDocs(collection(window.db, "produtos"));
-            for (const doc of produtosSnap.docs) await firebase.deleteDoc(doc.ref);
-            
-            const catsSnap = await firebase.getDocs(collection(window.db, "categorias"));
-            for (const doc of catsSnap.docs) await firebase.deleteDoc(doc.ref);
-            
-            const cuponsSnap = await firebase.getDocs(collection(window.db, "cupons"));
-            for (const doc of cuponsSnap.docs) await firebase.deleteDoc(doc.ref);
+            atualizarProgresso(10, 'Apagando produtos...');
+            const produtosSnap = await getDocs(collection(window.db, "produtos"));
+            for (const doc of produtosSnap.docs) {
+                await deleteDoc(doc.ref);
+            }
+
+            atualizarProgresso(20, 'Apagando categorias...');
+            const categoriasSnap = await getDocs(collection(window.db, "categorias"));
+            for (const doc of categoriasSnap.docs) {
+                await deleteDoc(doc.ref);
+            }
 
             // Criar categorias
-            progAtualizar(30, 'Criando categorias...');
+            atualizarProgresso(30, 'Criando categorias...');
             
             const categorias = [
-                { nome: "Carnes na Brasa", ordem: 1 },
-                { nome: "Pratos Feitos (PF)", ordem: 2 },
-                { nome: "Acompanhamentos", ordem: 3 },
-                { nome: "Porções para Compartilhar", ordem: 4 },
-                { nome: "Bebidas", ordem: 5 }
+                { nome: "Carnes na Brasa", tipo: "categoria", ordem: 1 },
+                { nome: "Pratos Feitos (PF)", tipo: "categoria", ordem: 2 },
+                { nome: "Acompanhamentos", tipo: "categoria", ordem: 3 },
+                { nome: "Porções para Compartilhar", tipo: "categoria", ordem: 4 },
+                { nome: "Lanches na Brasa", tipo: "categoria", ordem: 5 },
+                { nome: "Bebidas", tipo: "categoria", ordem: 6 }
             ];
 
             const CATS = {};
             for (let i = 0; i < categorias.length; i++) {
-                const docRef = await firebase.addDoc(collection(window.db, "categorias"), categorias[i]);
-                CATS[categorias[i].nome] = docRef.id;
+                const cat = categorias[i];
+                const docRef = await addDoc(collection(window.db, "categorias"), cat);
+                CATS[cat.nome] = docRef.id;
+                atualizarProgresso(30 + (i + 1) * 2, `Criando categoria: ${cat.nome}`);
             }
 
             // Criar produtos
-            progAtualizar(50, 'Criando produtos...');
+            atualizarProgresso(45, 'Criando produtos...');
 
             const produtos = [
-                // Carnes
-                { nome: "Picanha na Brasa (300g)", descricao: "Corte nobre grelhado no ponto ideal. Acompanha farofa e vinagrete.", preco: 89.90, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1558030089-58c1a5c3a7f0?w=400" },
-                { nome: "Alcatra Grelhada (350g)", descricao: "Macia e suculenta, finalizada com sal grosso. Acompanha mandioca.", preco: 75.00, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400" },
-                { nome: "Contra-filé na Brasa (300g)", descricao: "Clássico do churrasco brasileiro. Servido com farofa.", preco: 69.90, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=400" },
-                { nome: "Fraldinha Premium (400g)", descricao: "Assada lentamente. Acompanha chimichurri.", preco: 79.90, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400" },
-                { nome: "Costela Assada (8h)", descricao: "Assada até desmanchar. Servida com mandioca.", preco: 85.00, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400" },
-                { nome: "Linguiça Toscana", descricao: "4 unidades grelhadas na brasa.", preco: 32.90, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1527474006333-5a3acc1ac2a1?w=400" },
+                // Carnes na Brasa
+                { nome: "Picanha na Brasa", descricao: "Corte nobre grelhado no ponto ideal, servido fatiado. Acompanha farofa e vinagrete.", preco: 89.90, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1558030089-58c1a5c3a7f0?w=400" },
+                { nome: "Alcatra Grelhada", descricao: "Macia e suculenta, finalizada com sal grosso. Acompanha mandioca cozida.", preco: 75.00, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400" },
+                { nome: "Contra-filé na Brasa", descricao: "Clássico do churrasco brasileiro. Servido com farofa e vinagrete.", preco: 69.90, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=400" },
+                { nome: "Costela Assada (8h)", descricao: "Assada em fogo baixo até desmanchar. Servida com mandioca.", preco: 85.00, categoria: "Carnes na Brasa", imagem: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400" },
                 
-                // PFs
-                { nome: "PF Picanha", descricao: "Picanha + arroz + feijão + farofa + vinagrete.", preco: 42.90, categoria: "Pratos Feitos (PF)", imagem: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400" },
-                { nome: "PF Costela", descricao: "Costela desfiada + arroz + feijão + purê.", preco: 38.90, categoria: "Pratos Feitos (PF)", imagem: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400" },
-                { nome: "PF Frango", descricao: "Frango + arroz + feijão + salada.", preco: 32.90, categoria: "Pratos Feitos (PF)", imagem: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400" },
-                { nome: "PF Misto", descricao: "Alcatra + linguiça + arroz + feijão + fritas.", preco: 45.90, categoria: "Pratos Feitos (PF)", imagem: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400" },
+                // Pratos Feitos
+                { nome: "PF Picanha", descricao: "Picanha fatiada + arroz + feijão + farofa + vinagrete.", preco: 42.90, categoria: "Pratos Feitos (PF)", imagem: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400" },
+                { nome: "PF Costela", descricao: "Costela desfiada + arroz + feijão + purê de batata.", preco: 38.90, categoria: "Pratos Feitos (PF)", imagem: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=400" },
                 
                 // Acompanhamentos
-                { nome: "Arroz Branco", descricao: "Porção individual.", preco: 8.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1516684732162-798a006e2b99?w=400" },
-                { nome: "Feijão Carioca", descricao: "Porção individual.", preco: 8.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" },
-                { nome: "Farofa Especial", descricao: "Com bacon e ovos.", preco: 7.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=400" },
-                { nome: "Vinagrete", descricao: "Molho tradicional.", preco: 6.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=400" },
-                { nome: "Batata Frita", descricao: "Porção crocante.", preco: 18.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=400" },
-                { nome: "Mandioca Frita", descricao: "Porção.", preco: 16.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=400" },
-                { nome: "Salada Completa", descricao: "Mix de folhas.", preco: 14.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400" },
+                { nome: "Arroz Branco", descricao: "Porção individual de arroz soltinho.", preco: 8.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1516684732162-798a006e2b99?w=400" },
+                { nome: "Feijão Carioca", descricao: "Feijão temperado na medida certa.", preco: 8.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" },
+                { nome: "Batata Frita", descricao: "Porção de batata frita crocante.", preco: 18.90, categoria: "Acompanhamentos", imagem: "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=400" },
                 
                 // Porções
                 { nome: "Porção Mista da Casa", descricao: "Picanha + linguiça + frango + fritas + farofa. Serve 2-3 pessoas.", preco: 129.90, categoria: "Porções para Compartilhar", imagem: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400" },
-                { nome: "Costela com Mandioca", descricao: "Costela desfiada com mandioca. Serve 2.", preco: 89.90, categoria: "Porções para Compartilhar", imagem: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400" },
-                { nome: "Linguiça Acebolada", descricao: "Linguiça com cebola. Serve 2.", preco: 48.90, categoria: "Porções para Compartilhar", imagem: "https://images.unsplash.com/photo-1527474006333-5a3acc1ac2a1?w=400" },
+                
+                // Lanches
+                { nome: "X-Picanha", descricao: "Pão australiano, picanha fatiada, queijo cheddar, alface, tomate e molho especial.", preco: 32.90, categoria: "Lanches na Brasa", imagem: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400" },
                 
                 // Bebidas
-                { nome: "Coca-Cola Lata", descricao: "350ml", preco: 6.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
-                { nome: "Guaraná Lata", descricao: "350ml", preco: 6.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
-                { nome: "Coca-Cola 2L", descricao: "", preco: 14.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
-                { nome: "Suco Natural", descricao: "500ml - Laranja/Limão/Maracujá", preco: 12.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1613478225719-02e6d3063a1a?w=400" },
-                { nome: "Água 500ml", descricao: "Com ou sem gás", preco: 4.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1564419320467-6876feb6e6d6?w=400" },
-                { nome: "Cerveja Lata", descricao: "Skol/Brahma/Antarctica", preco: 7.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400" },
-                { nome: "Heineken Long Neck", descricao: "", preco: 12.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400" }
+                { nome: "Refrigerante Lata 350ml", descricao: "Coca-Cola, Guaraná, Fanta ou Sprite.", preco: 6.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
+                { nome: "Cerveja Lata 350ml", descricao: "Skol, Brahma, Antarctica ou Heineken.", preco: 7.90, categoria: "Bebidas", imagem: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400" }
             ];
 
             for (let i = 0; i < produtos.length; i++) {
                 const prod = produtos[i];
-                const catId = CATS[prod.categoria];
-                if (!catId) continue;
+                const categoriaId = CATS[prod.categoria];
+                if (!categoriaId) continue;
                 
-                await firebase.addDoc(collection(window.db, "produtos"), {
+                await addDoc(collection(window.db, "produtos"), {
                     nome: prod.nome,
                     descricao: prod.descricao,
                     preco: prod.preco,
-                    categoria_id: catId,
+                    categoria_id: categoriaId,
                     imagem_url: prod.imagem,
                     disponivel: true
                 });
                 
-                progAtualizar(50 + Math.floor((i + 1) / produtos.length * 45), `Produto ${i+1}/${produtos.length}`);
+                atualizarProgresso(45 + Math.floor((i + 1) / produtos.length * 50), `Criando produto ${i+1}/${produtos.length}`);
             }
 
             // Criar cupom
-            progAtualizar(95, 'Criando cupom...');
-            await firebase.addDoc(collection(window.db, "cupons"), {
-                codigo: "GRILL10",
+            atualizarProgresso(95, 'Criando cupom...');
+            await addDoc(collection(window.db, "cupons"), {
+                codigo: "PRIMEIRACOMPRA",
                 valor: 10.00,
                 ativo: true
             });
 
-            progAtualizar(100, 'Concluído!');
+            atualizarProgresso(100, 'Sincronização concluída!');
             
             setTimeout(() => {
-                progEsconder();
-                notificar('Sucesso', 'Cardápio sincronizado!', 'sucesso');
-                carregarCategorias();
-                carregarProdutos();
+                esconderProgresso();
+                mostrarNotificacao('Sucesso', 'Cardápio sincronizado! Recarregando...', 'sucesso');
+                setTimeout(() => location.reload(), 1500);
             }, 1000);
 
         } catch (error) {
-            console.error(error);
-            progEsconder();
-            notificar('Erro', error.message, 'erro');
+            console.error("Erro:", error);
+            esconderProgresso();
+            mostrarNotificacao('Erro', error.message, 'erro');
         }
     };
 
-    // Funções admin placeholder
-    function renderProdutosAdmin() {
-        document.getElementById('sec-produtos').innerHTML = '<div class="text-center py-10 text-gray-400">Gestão de produtos em desenvolvimento</div>';
+    // ==================== CARREGAR DADOS DO FIREBASE ====================
+    async function carregarDados() {
+        if (!window.db) return;
+        
+        try {
+            // Carregar categorias
+            const catsSnap = await getDocs(collection(window.db, "categorias"));
+            CATS = catsSnap.docs.map(d => ({id: d.id, ...d.data()}));
+            
+            // Carregar produtos
+            const prodsSnap = await getDocs(collection(window.db, "produtos"));
+            PRODS = prodsSnap.docs.map(d => ({id: d.id, ...d.data()}));
+            
+            // Renderizar
+            renderFiltros();
+            renderCardapio();
+            
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+        }
     }
-    
-    function renderCategoriasAdmin() {
-        document.getElementById('sec-categorias').innerHTML = '<div class="text-center py-10 text-gray-400">Gestão de categorias em desenvolvimento</div>';
-    }
-    
-    function renderCuponsAdmin() {
-        document.getElementById('sec-cupons').innerHTML = '<div class="text-center py-10 text-gray-400">Gestão de cupons em desenvolvimento</div>';
-    }
-    
-    function renderConfigAdmin() {
-        document.getElementById('sec-config').innerHTML = '<div class="text-center py-10 text-gray-400">Configurações em desenvolvimento</div>';
-    }
-    
-    window.imprimirPedido = function(id) {
-        notificar('Impressão', 'Funcionalidade em desenvolvimento', 'info');
+
+    // ==================== INICIALIZAÇÃO ====================
+    window.addEventListener('firebase-ready', () => {
+        document.getElementById('initial-loading').style.display = 'none';
+        carregarDados();
+    });
+
+    // Placeholder functions
+    window.abrirPersonalizadorPrato = () => mostrarNotificacao('Aviso', 'Funcionalidade em desenvolvimento', 'info');
+    window.setModoConsumo = () => {};
+    window.abrirCheckout = () => mostrarNotificacao('Aviso', 'Checkout em desenvolvimento', 'info');
+    window.fecharCheckout = () => document.getElementById('modal-checkout').classList.add('hidden');
+    window.obterGPSCliente = () => mostrarNotificacao('Aviso', 'GPS em desenvolvimento', 'info');
+    window.enviarPedido = () => mostrarNotificacao('Aviso', 'Finalização em desenvolvimento', 'info');
+    window.aplicarCupom = () => mostrarNotificacao('Aviso', 'Cupons em desenvolvimento', 'info');
+    window.switchTab = (tab) => {
+        document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('hidden'));
+        document.getElementById(`sec-${tab}`)?.classList.remove('hidden');
     };
     </script>
 </body>
