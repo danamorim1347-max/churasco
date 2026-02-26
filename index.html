@@ -15,6 +15,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- SweetAlert2 para popups bonitos -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <!-- Firebase SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -86,7 +89,7 @@
         .upload-area { border: 2px dashed #fca5a5; transition: all 0.3s; }
         .upload-area:hover { border-color: #b91c1c; background: #fff1f1; }
         
-        /* ===== LAYOUT CLIENTE - ADAPTÁVEL ===== */
+        /* ===== LAYOUT CLIENTE ===== */
         #view-cliente {
             max-width: 1200px;
             margin: 0 auto;
@@ -94,7 +97,6 @@
             min-height: 100vh;
         }
         
-        /* Header responsivo */
         .header-banner {
             position: relative;
             width: 100%;
@@ -102,7 +104,6 @@
             overflow: hidden;
         }
         
-        /* Container do cardápio - grid adaptável */
         #cardapio {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -112,7 +113,6 @@
             margin: 0 auto;
         }
         
-        /* Cards de produto */
         .produto-card {
             background: white;
             border-radius: 1.5rem;
@@ -129,7 +129,20 @@
             transform: translateY(-2px);
         }
         
-        /* Filtros roláveis */
+        /* Produto sem imagem */
+        .produto-sem-imagem {
+            width: 64px;
+            height: 64px;
+            background: #fff1f0;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b91c1c;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
         #filtros {
             display: flex;
             gap: 0.5rem;
@@ -144,7 +157,7 @@
             z-index: 20;
         }
         
-        /* ===== LAYOUT ADMIN - MAIS COMPACTO ===== */
+        /* ===== LAYOUT ADMIN ===== */
         #view-admin {
             max-width: 1400px;
             margin: 0 auto;
@@ -152,19 +165,54 @@
             min-height: 100vh;
         }
         
-        /* Dashboard cards - ainda menores */
+        /* Abas do Admin no topo */
+        .admin-tabs {
+            display: flex;
+            background: white;
+            border-radius: 2rem;
+            margin: 1rem;
+            padding: 0.35rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .admin-tab {
+            flex: 1;
+            padding: 0.6rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-align: center;
+            border-radius: 2rem;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .admin-tab.active {
+            background: #b91c1c;
+            color: white;
+        }
+        
+        /* Dashboard cards - separado e compacto */
+        .dashboard-section {
+            background: white;
+            border-radius: 1.5rem;
+            margin: 1rem;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
         .dashboard-cards {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 0.5rem;
-            padding: 0.75rem;
+            gap: 0.75rem;
         }
         
         .stat-card {
             background: linear-gradient(135deg, #b91c1c, #991b1b);
             color: white;
-            padding: 0.75rem;
-            border-radius: 1rem;
+            padding: 1rem;
+            border-radius: 1.2rem;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             transition: all 0.2s;
         }
@@ -172,49 +220,55 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(185,28,28,0.3);
         }
-        .stat-card i { font-size: 1rem; margin-bottom: 0.25rem; }
-        .stat-card p { font-size: 0.6rem; opacity: 0.8; }
-        .stat-card h3 { font-size: 1.1rem; font-weight: 900; }
+        .stat-card i { font-size: 1.2rem; margin-bottom: 0.3rem; }
+        .stat-card p { font-size: 0.65rem; opacity: 0.8; }
+        .stat-card h3 { font-size: 1.2rem; font-weight: 900; }
         
-        /* Grid do admin */
-        .admin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 0.75rem;
-            padding: 0.75rem;
-        }
-        
-        /* Produtos no admin - grid compacto */
+        /* Produtos no admin */
         .produtos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 0.75rem;
         }
         
-        /* Abas do admin */
-        .admin-tabs {
-            display: flex;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+        /* Conteúdo das abas */
+        .tab-content {
+            padding: 1rem;
+        }
+        
+        /* Bebidas sugestão */
+        .bebida-sugestao {
             background: white;
-            border-radius: 2rem;
-            margin: 0.75rem;
-            padding: 0.25rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 1rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid #ffedd5;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .admin-tab {
+        .bebida-sugestao:hover {
+            border-color: #b91c1c;
+            background: #fff1f1;
+        }
+        .bebida-sugestao img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+        .bebida-sugestao .info {
             flex: 1;
-            min-width: max-content;
-            padding: 0.6rem 1rem;
-            font-size: 0.7rem;
-            font-weight: 900;
-            text-align: center;
-            border-radius: 2rem;
-            white-space: nowrap;
         }
-        .admin-tab.active {
-            background: #b91c1c;
-            color: white;
+        .bebida-sugestao .nome {
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+        .bebida-sugestao .preco {
+            color: #b91c1c;
+            font-weight: 800;
+            font-size: 0.7rem;
         }
         
         /* ===== AJUSTES MOBILE ===== */
@@ -223,50 +277,46 @@
                 grid-template-columns: 1fr;
                 padding: 0.75rem;
             }
-            .produto-card {
-                padding: 0.75rem;
-            }
             .dashboard-cards {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.5rem;
-                padding: 0.5rem;
             }
             .stat-card {
-                padding: 0.6rem;
+                padding: 0.75rem;
             }
             .stat-card h3 {
                 font-size: 1rem;
             }
-            .admin-grid {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-                padding: 0.5rem;
-            }
-            .produtos-grid {
-                grid-template-columns: 1fr;
-            }
             .admin-tabs {
                 margin: 0.5rem;
+                padding: 0.25rem;
             }
             .admin-tab {
-                padding: 0.5rem 0.75rem;
+                padding: 0.5rem 0.25rem;
                 font-size: 0.65rem;
+            }
+            .dashboard-section {
+                margin: 0.5rem;
+                padding: 0.75rem;
             }
         }
         
-        /* Telas muito pequenas */
-        @media (max-width: 380px) {
+        @media (max-width: 480px) {
             .dashboard-cards {
                 grid-template-columns: 1fr;
             }
             .stat-card {
                 display: flex;
                 align-items: center;
-                gap: 0.75rem;
+                gap: 1rem;
+                padding: 0.75rem;
             }
             .stat-card i {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
                 margin-bottom: 0;
+            }
+            .stat-card div {
+                flex: 1;
             }
         }
         
@@ -277,7 +327,7 @@
     </style>
 </head>
 <body class="flex justify-center bg-orange-50">
-    <!-- Loading inicial - só espeto! -->
+    <!-- Loading inicial -->
     <div id="initial-loading" class="fixed inset-0 bg-orange-50 flex items-center justify-center z-[9999]">
         <div class="text-center">
             <div class="text-5xl mb-4 animate-bounce">🥩</div>
@@ -361,6 +411,55 @@
         </div>
     </div>
 
+    <!-- MODAL PERSONALIZAÇÃO (Apenas para PF e Espetos) -->
+    <div id="modal-personalizacao" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-[30px] p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center font-bebas text-lg text-red-600">
+                <h2 id="personalizacao-titulo">Personalizar</h2>
+                <button onclick="fecharPersonalizacao()">✕</button>
+            </div>
+            
+            <!-- Acompanhamentos do Cardápio organizados por grupos -->
+            <div id="acompanhamentos-personalizacao-container" class="space-y-4"></div>
+            
+            <!-- Botão COMPLETO -->
+            <button onclick="selecionarTodosAcompanhamentos()" class="w-full bg-blue-600 text-white py-2 rounded-xl font-black text-xs mb-2">
+                🔥 COMPLETO (Selecionar todos os grupos)
+            </button>
+            
+            <!-- Resumo -->
+            <div class="bg-orange-50 p-3 rounded-xl border border-dashed border-red-300">
+                <div class="flex justify-between font-bold text-sm">
+                    <span>Total do item:</span>
+                    <span id="personalizacao-total">R$ 0,00</span>
+                </div>
+                <div id="personalizacao-resumo" class="text-[10px] text-gray-600 mt-1"></div>
+            </div>
+            
+            <button onclick="adicionarPersonalizadoAoCarrinho()" class="w-full bg-green-600 text-white py-3 rounded-xl font-black text-sm hover:bg-green-700">
+                ✓ Adicionar ao Carrinho
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL SUGESTÃO DE BEBIDAS -->
+    <div id="modal-sugestao-bebidas" class="fixed inset-0 bg-black/80 z-[90] hidden flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-[30px] p-5 space-y-3 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center font-bebas text-lg text-red-600">
+                <h2>Que tal uma bebida? 🍻</h2>
+                <button onclick="fecharSugestaoBebidas()">✕</button>
+            </div>
+            
+            <div class="text-xs text-gray-500 mb-2">Adicione ao carrinho com 1 clique</div>
+            
+            <div id="lista-bebidas-sugestao" class="space-y-2"></div>
+            
+            <button onclick="fecharSugestaoBebidas()" class="w-full bg-gray-900 text-red-400 py-2 rounded-xl font-black text-xs">
+                Continuar sem bebida
+            </button>
+        </div>
+    </div>
+
     <!-- MODAL CHECKOUT -->
     <div id="modal-checkout" class="fixed inset-0 bg-black/80 z-50 hidden flex items-end justify-center">
         <div class="bg-white w-full max-w-md rounded-t-[30px] p-5 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -378,6 +477,11 @@
 
             <!-- Itens do Carrinho -->
             <div id="checkout-itens-list" class="bg-orange-50 p-3 rounded-2xl border space-y-2 text-xs max-h-48 overflow-y-auto"></div>
+
+            <!-- Botão Sugerir Bebidas -->
+            <button onclick="abrirSugestaoBebidas()" class="w-full bg-blue-50 text-blue-600 p-2 rounded-xl text-xs font-black border border-blue-200">
+                🍺 Adicionar Bebida
+            </button>
 
             <!-- Formulário -->
             <div class="space-y-2">
@@ -436,54 +540,10 @@
             </div>
         </header>
 
-        <!-- Dashboard de Métricas - SUPER COMPACTO -->
-        <div class="dashboard-cards">
-            <div class="stat-card">
-                <i class="fas fa-shopping-bag"></i>
-                <p>Hoje</p>
-                <h3 id="dashboard-pedidos-hoje">0</h3>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #16a34a, #15803d);">
-                <i class="fas fa-money-bill-wave"></i>
-                <p>Vendas</p>
-                <h3 id="dashboard-vendas-hoje">R$ 0</h3>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
-                <i class="fas fa-clock"></i>
-                <p>Tempo</p>
-                <h3 id="dashboard-tempo-medio">32min</h3>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #7e22ce, #6b21a5);">
-                <i class="fas fa-chart-line"></i>
-                <p>Ticket</p>
-                <h3 id="dashboard-ticket-medio">R$ 0</h3>
-            </div>
-        </div>
-
-        <!-- Grid de 2 colunas para conteúdo -->
-        <div class="admin-grid">
-            <!-- Produtos Mais Vendidos -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm">
-                <h3 class="font-bebas text-base text-gray-800 mb-2 flex items-center gap-1">
-                    <i class="fas fa-fire text-red-600 text-sm"></i>
-                    Mais Vendidos
-                </h3>
-                <div id="mais-vendidos-lista" class="space-y-2 max-h-64 overflow-y-auto text-sm"></div>
-            </div>
-
-            <!-- Últimos Pedidos -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm">
-                <h3 class="font-bebas text-base text-gray-800 mb-2 flex items-center gap-1">
-                    <i class="fas fa-history text-blue-600 text-sm"></i>
-                    Últimos Pedidos
-                </h3>
-                <div id="ultimos-pedidos-lista" class="space-y-2 max-h-64 overflow-y-auto text-sm"></div>
-            </div>
-        </div>
-
-        <!-- Abas do Admin - Roláveis -->
+        <!-- Abas no topo -->
         <div class="admin-tabs">
-            <button onclick="switchTab('pedidos')" id="tab-pedidos" class="admin-tab active">📋 Pedidos</button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="admin-tab active">📊 Dashboard</button>
+            <button onclick="switchTab('pedidos')" id="tab-pedidos" class="admin-tab">📋 Pedidos</button>
             <button onclick="switchTab('produtos')" id="tab-produtos" class="admin-tab">🥩 Cardápio</button>
             <button onclick="switchTab('categorias')" id="tab-categorias" class="admin-tab">📁 Categorias</button>
             <button onclick="switchTab('cupons')" id="tab-cupons" class="admin-tab">🎫 Cupons</button>
@@ -492,9 +552,53 @@
             <button onclick="switchTab('tamanhos')" id="tab-tamanhos" class="admin-tab">📏 Tamanhos</button>
         </div>
 
+        <!-- Dashboard Section (separado) -->
+        <div id="dashboard-section" class="dashboard-section">
+            <h2 class="font-bebas text-xl mb-3">📊 Resumo do Dia</h2>
+            <div class="dashboard-cards">
+                <div class="stat-card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <div>
+                        <p>Pedidos Hoje</p>
+                        <h3 id="dashboard-pedidos-hoje">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #16a34a, #15803d);">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <div>
+                        <p>Vendas Hoje</p>
+                        <h3 id="dashboard-vendas-hoje">R$ 0</h3>
+                    </div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <p>Tempo Médio</p>
+                        <h3 id="dashboard-tempo-medio">32min</h3>
+                    </div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #7e22ce, #6b21a5);">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <p>Ticket Médio</p>
+                        <h3 id="dashboard-ticket-medio">R$ 0</h3>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Apenas mais vendidos, sem últimos pedidos -->
+            <div class="mt-4">
+                <h3 class="font-bebas text-lg mb-2 flex items-center gap-1">
+                    <i class="fas fa-fire text-red-600"></i>
+                    Mais Vendidos
+                </h3>
+                <div id="mais-vendidos-lista" class="space-y-2 max-h-64 overflow-y-auto"></div>
+            </div>
+        </div>
+
         <!-- Conteúdo das Abas -->
-        <div id="adm-content" class="p-3">
-            <div id="sec-pedidos" class="space-y-3"></div>
+        <div id="adm-content" class="tab-content">
+            <div id="sec-pedidos" class="hidden space-y-3"></div>
             <div id="sec-produtos" class="hidden"></div>
             <div id="sec-categorias" class="hidden"></div>
             <div id="sec-cupons" class="hidden"></div>
@@ -707,6 +811,12 @@
         let pedidosListenerUnsubscribe = null;
         let currentUser = null;
         
+        // Categorias específicas
+        let CATEGORIA_PRINCIPAL_ID = null; // Espetos, PF, etc.
+        let CATEGORIA_ACOMPANHAMENTOS_ID = null;
+        let CATEGORIA_BEBIDAS_ID = null;
+        let CATEGORIA_MOLHOS_ID = null;
+        
         // Variável para upload
         let uploadContexto = null;
         let uploadId = null;
@@ -725,31 +835,50 @@
         // Promoção
         let carnesSelecionadasPromocao = [];
 
-        // Dados padrão (só espetos!)
+        // Personalização
+        let itemPersonalizacaoAtual = null;
+        let personalizacaoSelecionada = [];
+        let acompanhamentosListenerUnsubscribe = null;
+
+        // Dados padrão
         const CARDAPIO_INICIAL = {
             categorias: [
                 { nome: "Espetos", tipo: "categoria", ordem: 1 },
-                { nome: "Bebidas", tipo: "categoria", ordem: 2 },
-                { nome: "Porções", tipo: "categoria", ordem: 3 },
-                { nome: "Sobremesas", tipo: "categoria", ordem: 4 },
-                { nome: "Acompanhamentos", tipo: "montador", subtipo: "acompanhamento", ordem: 5 },
-                { nome: "Molhos", tipo: "montador", subtipo: "molho", ordem: 6 }
+                { nome: "PF", tipo: "categoria", ordem: 2 },
+                { nome: "Bebidas", tipo: "categoria", ordem: 3 },
+                { nome: "Porções", tipo: "categoria", ordem: 4 },
+                { nome: "Sobremesas", tipo: "categoria", ordem: 5 },
+                { nome: "Acompanhamentos", tipo: "montador", subtipo: "acompanhamento", ordem: 6 },
+                { nome: "Molhos", tipo: "montador", subtipo: "molho", ordem: 7 }
             ],
             produtos: [
+                { nome: "PF Picanha", descricao: "Picanha, arroz, farofa, vinagrete", preco: 42.90, categoria_nome: "PF", imagem_url: "", disponivel: true },
+                { nome: "PF Alcatra", descricao: "Alcatra, arroz, farofa, vinagrete", preco: 38.90, categoria_nome: "PF", imagem_url: "", disponivel: true },
+                { nome: "PF Frango", descricao: "Frango grelhado, arroz, farofa, salada", preco: 34.90, categoria_nome: "PF", imagem_url: "", disponivel: true },
                 { nome: "Espeto de Picanha", descricao: "Picanha em cubos, sal grosso", preco: 22.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
                 { nome: "Espeto de Alcatra", descricao: "Alcatra macia", preco: 19.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
                 { nome: "Espeto de Frango", descricao: "Peito de frango marinado", preco: 16.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
                 { nome: "Espeto de Coração", descricao: "Coração de frango", preco: 18.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
                 { nome: "Espeto de Linguiça", descricao: "Linguiça toscana", preco: 14.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
                 { nome: "Espeto Misto", descricao: "Picanha, frango e linguiça", preco: 24.90, categoria_nome: "Espetos", imagem_url: "", disponivel: true },
-                { nome: "Arroz", descricao: "Porção de arroz", preco: 8.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
-                { nome: "Farofa", descricao: "Farofa temperada", preco: 7.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Arroz Branco", descricao: "Porção de arroz branco", preco: 8.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Arroz Temperado", descricao: "Arroz com temperos", preco: 10.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Baião de Dois", descricao: "Arroz com feijão verde", preco: 12.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Farofa Tradicional", descricao: "Farofa simples", preco: 7.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Farofa Temperada", descricao: "Farofa com temperos", preco: 9.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Farofa com Bacon", descricao: "Farofa com bacon", preco: 12.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
                 { nome: "Vinagrete", descricao: "Vinagrete tradicional", preco: 6.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Salada Verde", descricao: "Alface, rúcula e tomate", preco: 8.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Salada com Maionese", descricao: "Salada com maionese", preco: 10.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Feijão Tropeiro", descricao: "Feijão com farofa", preco: 15.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
+                { nome: "Mandioca Frita", descricao: "Porção de mandioca", preco: 12.00, categoria_nome: "Acompanhamentos", imagem_url: "", disponivel: true },
                 { nome: "Molho de alho", descricao: "Molho cremoso", preco: 4.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
                 { nome: "Molho barbecue", descricao: "Molho defumado", preco: 4.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
                 { nome: "Molho chimichurri", descricao: "Chimichurri", preco: 5.00, categoria_nome: "Molhos", imagem_url: "", disponivel: true },
                 { nome: "Cerveja", descricao: "Long neck", preco: 8.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true },
-                { nome: "Refrigerante", descricao: "Lata 350ml", preco: 5.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true }
+                { nome: "Refrigerante", descricao: "Lata 350ml", preco: 5.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true },
+                { nome: "Água", descricao: "Garrafa 500ml", preco: 3.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true },
+                { nome: "Suco Natural", descricao: "Copo 300ml", preco: 7.90, categoria_nome: "Bebidas", imagem_url: "", disponivel: true }
             ],
             tamanhos_espeto: [
                 { nome: "P", descricao: "300g", preco: 29.90, ordem: 1, disponivel: true },
@@ -792,6 +921,71 @@
                 firestore: window.firebaseModules.firestore,
                 authModules: window.firebaseModules.auth
             };
+        }
+
+        // ==================== POPUP SYSTEM ====================
+        async function mostrarPopup(tipo, titulo, mensagem) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            switch(tipo) {
+                case 'sucesso':
+                    await Toast.fire({
+                        icon: 'success',
+                        title: titulo,
+                        text: mensagem
+                    });
+                    break;
+                case 'erro':
+                    await Toast.fire({
+                        icon: 'error',
+                        title: titulo,
+                        text: mensagem
+                    });
+                    break;
+                case 'aviso':
+                    await Toast.fire({
+                        icon: 'warning',
+                        title: titulo,
+                        text: mensagem
+                    });
+                    break;
+                case 'info':
+                    await Toast.fire({
+                        icon: 'info',
+                        title: titulo,
+                        text: mensagem
+                    });
+                    break;
+                default:
+                    await Toast.fire({
+                        icon: 'info',
+                        title: titulo,
+                        text: mensagem
+                    });
+            }
+        }
+
+        async function mostrarConfirmacao(titulo, texto) {
+            return await Swal.fire({
+                title: titulo,
+                text: texto,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#b91c1c',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Não'
+            });
         }
 
         // ==================== NOTIFICAÇÕES ====================
@@ -881,14 +1075,14 @@
                         document.getElementById('promo-imagem-preview').src = uploadImagemUrl;
                     }
                     
-                    alert('✅ Imagem enviada!');
+                    await mostrarPopup('sucesso', 'Imagem enviada!', 'Upload concluído com sucesso');
                     fecharModalUpload();
                 } else {
-                    alert('❌ Erro ao enviar');
+                    await mostrarPopup('erro', 'Erro no upload', 'Tente novamente');
                 }
             } catch (error) {
                 console.error('Erro upload:', error);
-                alert('❌ Erro de conexão');
+                await mostrarPopup('erro', 'Erro de conexão', 'Verifique sua internet');
             } finally {
                 btn.innerHTML = 'Confirmar';
                 btn.disabled = false;
@@ -953,30 +1147,25 @@
                     listaVendidos.innerHTML = '<div class="text-center text-gray-400 p-3 text-xs">Ainda sem vendas</div>';
                 }
                 
-                // Últimos pedidos
-                const ultimos = todosPedidos.sort((a,b) => (b.created_at||0) - (a.created_at||0)).slice(0,5);
-                const listaUltimos = document.getElementById('ultimos-pedidos-lista');
-                
-                if (ultimos.length) {
-                    listaUltimos.innerHTML = ultimos.map(p => `
-                        <div class="flex justify-between items-center p-2 bg-orange-50 rounded-xl text-xs">
-                            <div>
-                                <span class="font-bold">${p.cliente_nome || 'Cliente'}</span>
-                                <div class="text-[10px] text-gray-500">${p.created_at ? new Date(p.created_at).toLocaleTimeString() : '--'}</div>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-black text-red-600">R$ ${(parseFloat(p.total)||0).toFixed(2).replace('.',',')}</span>
-                                <div class="text-[10px] ${p.status==='Finalizado'?'text-green-600':'text-orange-600'}">${p.status||'Novo'}</div>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    listaUltimos.innerHTML = '<div class="text-center text-gray-400 p-3 text-xs">Nenhum pedido</div>';
-                }
-                
             } catch (error) {
                 console.error("Erro dashboard:", error);
             }
+        }
+
+        // ==================== IDENTIFICAR CATEGORIAS ====================
+        function identificarCategoriasEspecificas() {
+            const catEspetos = CATS.find(c => c.nome === "Espetos");
+            const catPF = CATS.find(c => c.nome === "PF");
+            const catAcompanhamentos = CATS.find(c => c.nome === "Acompanhamentos");
+            const catBebidas = CATS.find(c => c.nome === "Bebidas");
+            const catMolhos = CATS.find(c => c.nome === "Molhos");
+            
+            // Para personalização, consideramos tanto Espetos quanto PF como categorias principais
+            CATEGORIA_PRINCIPAL_ID = catEspetos ? catEspetos.id : null;
+            CATEGORIA_PF_ID = catPF ? catPF.id : null;
+            CATEGORIA_ACOMPANHAMENTOS_ID = catAcompanhamentos ? catAcompanhamentos.id : null;
+            CATEGORIA_BEBIDAS_ID = catBebidas ? catBebidas.id : null;
+            CATEGORIA_MOLHOS_ID = catMolhos ? catMolhos.id : null;
         }
 
         // ==================== INIT ====================
@@ -1005,7 +1194,7 @@
                 console.log("Pronto!");
             } catch (error) {
                 console.error("Erro init:", error);
-                alert("Erro ao iniciar: " + error.message);
+                await mostrarPopup('erro', 'Erro ao iniciar', error.message);
             }
         }
 
@@ -1110,8 +1299,7 @@
             if (PROMOCAO.ativa !== false) {
                 let carnesText = '';
                 if (PROMOCAO.carnes_inclusas?.length) {
-                    const catEspetos = CATS.find(c => c.nome === "Espetos");
-                    if (catEspetos) {
+                    if (CATEGORIA_PRINCIPAL_ID) {
                         const nomes = PROMOCAO.carnes_inclusas.map(id => {
                             const p = PRODS.find(p => p.id === id);
                             return p ? p.nome : '';
@@ -1155,6 +1343,9 @@
                 
                 await carregarTamanhos();
                 
+                // Identificar categorias específicas
+                identificarCategoriasEspecificas();
+                
                 CATS.sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
                 
                 renderFiltros();
@@ -1193,7 +1384,9 @@
                     const pedidos = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
                     
                     if (!document.getElementById('view-admin').classList.contains('hidden')) {
-                        renderPedidosADM(pedidos);
+                        if (document.getElementById('sec-pedidos').classList.contains('hidden') === false) {
+                            renderPedidosADM(pedidos);
+                        }
                         atualizarDashboard();
                     }
                     
@@ -1203,6 +1396,7 @@
                             const audio = document.getElementById('alerta-som');
                             if (audio) audio.play().catch(() => {});
                             enviarNotificacao("🥩 Novo Pedido!", "Clique para ver");
+                            mostrarPopup('info', 'Novo pedido!', 'Verifique a aba de pedidos');
                         } catch (e) {}
                     }
                 });
@@ -1274,8 +1468,9 @@
             let html = `<button onclick="renderCardapio('todos')" class="whitespace-nowrap px-3 py-1.5 text-xs font-black uppercase border rounded-full ${curCat === 'todos' ? 'bg-gray-900 text-red-400 border-gray-900' : 'border-orange-200 text-gray-400'}">Todos</button>`;
             
             catsPrincipais.forEach(c => {
+                // Mostrar apenas categorias que não são de montador e têm produtos
                 const temProdutos = PRODS.some(p => p.categoria_id === c.id && p.disponivel !== false);
-                if (temProdutos) {
+                if (temProdutos && c.tipo !== 'montador') {
                     html += `<button onclick="renderCardapio('${c.id}')" class="whitespace-nowrap px-3 py-1.5 text-xs font-black uppercase border rounded-full ${curCat === c.id ? 'bg-gray-900 text-red-400 border-gray-900' : 'border-orange-200 text-gray-400'}">${c.nome}</button>`;
                 }
             });
@@ -1304,16 +1499,19 @@
             filtrados.forEach(p => {
                 const cat = CATS.find(c => c.id === p.categoria_id);
                 const corCat = cat?.nome === "Espetos" ? "bg-red-100 text-red-700" : 
+                               cat?.nome === "PF" ? "bg-orange-100 text-orange-700" :
                                cat?.nome === "Bebidas" ? "bg-blue-100 text-blue-700" :
                                cat?.nome === "Porções" ? "bg-yellow-100 text-yellow-700" :
                                cat?.nome === "Sobremesas" ? "bg-purple-100 text-purple-700" :
                                "bg-gray-100 text-gray-700";
                 
                 html += `
-                <div class="bg-white rounded-2xl shadow-sm p-3 flex gap-3 border border-orange-100 items-center cursor-pointer hover:shadow-md transition produto-card" onclick="abrirDetalhesProduto('${p.id}')">
+                <div class="bg-white rounded-2xl shadow-sm p-3 flex gap-3 border border-orange-100 items-center cursor-pointer hover:shadow-md transition produto-card" onclick="selecionarProdutoParaPersonalizacao('${p.id}')">
+                    ${p.imagem_url ? `
                     <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                        <img src="${p.imagem_url || 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png'}" class="w-full h-full object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'">
+                        <img src="${p.imagem_url}" class="w-full h-full object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'">
                     </div>
+                    ` : ''}
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-start gap-1">
                             <h3 class="font-black text-sm uppercase truncate">${p.nome}</h3>
@@ -1322,7 +1520,7 @@
                         <p class="text-xs text-gray-400 line-clamp-1 mb-2">${p.descricao || ''}</p>
                         <div class="flex justify-between items-center">
                             <span class="text-red-600 font-black">R$ ${(p.preco || 0).toFixed(2).replace('.',',')}</span>
-                            <button onclick="event.stopPropagation(); addCart('${p.id}')" class="bg-red-600 text-white w-7 h-7 rounded-xl font-black hover:bg-red-700 flex-shrink-0 text-sm">+</button>
+                            <button onclick="event.stopPropagation(); selecionarProdutoParaPersonalizacao('${p.id}')" class="bg-red-600 text-white w-7 h-7 rounded-xl font-black hover:bg-red-700 flex-shrink-0 text-sm">+</button>
                         </div>
                     </div>
                 </div>`;
@@ -1331,63 +1529,380 @@
             div.innerHTML = html;
         }
 
-        function abrirDetalhesProduto(id) {
+        // ==================== PERSONALIZAÇÃO (Apenas para PF e Espetos) ====================
+        function selecionarProdutoParaPersonalizacao(id) {
             const p = PRODS.find(i => i.id === id);
             if (!p) return;
             
-            const modal = document.createElement('div');
-            modal.id = 'modal-detalhes';
-            modal.className = 'fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4';
-            modal.innerHTML = `
-                <div class="bg-white w-full max-w-md rounded-[30px] overflow-hidden">
-                    <div class="relative">
-                        <img src="${p.imagem_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800'}" class="w-full h-40 object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'">
-                        <button onclick="this.closest('#modal-detalhes').remove()" class="absolute top-3 right-3 bg-white/80 w-8 h-8 rounded-full flex items-center justify-center text-sm">✕</button>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex justify-between mb-2">
-                            <h3 class="font-bebas text-xl">${p.nome}</h3>
-                            <span class="text-red-600 font-black text-base">R$ ${(p.preco || 0).toFixed(2).replace('.',',')}</span>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-4">${p.descricao || 'Sem descrição'}</p>
-                        <button onclick="addCart('${p.id}'); this.closest('#modal-detalhes').remove()" class="w-full bg-red-600 text-white py-3 rounded-2xl font-black hover:bg-red-700 text-sm">Adicionar ao Carrinho</button>
-                    </div>
-                </div>`;
-            document.body.appendChild(modal);
+            if (CONFIG.loja_aberta === false) {
+                mostrarPopup('aviso', 'Loja fechada', 'Volte mais tarde');
+                return;
+            }
+            
+            if (p.disponivel === false) {
+                mostrarPopup('erro', 'Indisponível', 'Produto não disponível');
+                return;
+            }
+            
+            // Verificar categoria da categoria do produto
+            const categoriaProduto = CATS.find(c => c.id === p.categoria_id);
+            const nomeCategoria = categoriaProduto?.nome || '';
+            
+            // Só abrir personalização para PF ou Espetos
+            if (nomeCategoria === "PF" || nomeCategoria === "Espetos") {
+                itemPersonalizacaoAtual = { 
+                    ...p, 
+                    id, 
+                    categoria_nome: nomeCategoria,
+                    preco_base: p.preco 
+                };
+                abrirPersonalizacao();
+            } else {
+                // Para outros produtos, adicionar direto ao carrinho
+                CARRINHO.push({
+                    id: p.id,
+                    nome: p.nome,
+                    descricao: p.descricao || '',
+                    preco: p.preco,
+                    total_item: p.preco,
+                    tipo: 'produto'
+                });
+                updateCartFooter();
+                mostrarPopup('sucesso', 'Adicionado!', `${p.nome} foi adicionado ao carrinho`);
+            }
         }
 
-        function addCart(id) {
-            if(CONFIG.loja_aberta === false) {
-                alert("Loja fechada no momento!");
+        function abrirPersonalizacao() {
+            if (!itemPersonalizacaoAtual) return;
+            
+            document.getElementById('personalizacao-titulo').textContent = 
+                `Personalizar ${itemPersonalizacaoAtual.nome} (${itemPersonalizacaoAtual.categoria_nome})`;
+            
+            // Resetar seleções
+            personalizacaoSelecionada = [];
+            
+            // Carregar acompanhamentos com listener em tempo real
+            carregarAcompanhamentosDoCardapioComListener();
+            
+            document.getElementById('modal-personalizacao').classList.remove('hidden');
+        }
+
+        function carregarAcompanhamentosDoCardapioComListener() {
+            const container = document.getElementById('acompanhamentos-personalizacao-container');
+            if (!container) return;
+            
+            if (!CATEGORIA_ACOMPANHAMENTOS_ID) {
+                container.innerHTML = '<div class="text-center text-gray-400 p-3 text-xs">Nenhum acompanhamento disponível</div>';
                 return;
             }
             
+            // Remover listener anterior se existir
+            if (acompanhamentosListenerUnsubscribe) {
+                acompanhamentosListenerUnsubscribe();
+            }
+            
+            try {
+                const { db, firestore } = getFirebaseRefs();
+                
+                // Criar query para buscar apenas acompanhamentos disponíveis
+                const q = firestore.query(
+                    firestore.collection(db, "produtos"),
+                    firestore.where("categoria_id", "==", CATEGORIA_ACOMPANHAMENTOS_ID),
+                    firestore.where("disponivel", "==", true)
+                );
+                
+                // Usar onSnapshot para atualização em tempo real
+                acompanhamentosListenerUnsubscribe = firestore.onSnapshot(q, (snapshot) => {
+                    const acompanhamentos = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    
+                    // Organizar por grupos
+                    const grupos = {
+                        ARROZ: [],
+                        FAROFA: [],
+                        SALADA: [],
+                        OUTROS: []
+                    };
+                    
+                    acompanhamentos.forEach(acomp => {
+                        const nome = acomp.nome.toLowerCase();
+                        if (nome.includes('arroz') || nome.includes('baião')) {
+                            grupos.ARROZ.push(acomp);
+                        } else if (nome.includes('farofa')) {
+                            grupos.FAROFA.push(acomp);
+                        } else if (nome.includes('salada') || nome.includes('vinagrete') || nome.includes('vinagrete')) {
+                            grupos.SALADA.push(acomp);
+                        } else {
+                            grupos.OUTROS.push(acomp);
+                        }
+                    });
+                    
+                    renderizarAcompanhamentosPorGrupo(grupos);
+                }, (error) => {
+                    console.error("Erro ao carregar acompanhamentos:", error);
+                    container.innerHTML = '<div class="text-center text-gray-400 p-3 text-xs">Erro ao carregar acompanhamentos</div>';
+                });
+                
+            } catch (error) {
+                console.error("Erro ao configurar listener:", error);
+                container.innerHTML = '<div class="text-center text-gray-400 p-3 text-xs">Erro ao carregar acompanhamentos</div>';
+            }
+        }
+
+        function renderizarAcompanhamentosPorGrupo(grupos) {
+            const container = document.getElementById('acompanhamentos-personalizacao-container');
+            if (!container) return;
+            
+            let html = '';
+            
+            // Função para renderizar cada grupo
+            Object.entries(grupos).forEach(([nomeGrupo, items]) => {
+                if (items.length === 0) return;
+                
+                html += `
+                    <div class="grupo-acompanhamentos mb-4">
+                        <h3 class="font-black text-xs uppercase text-red-600 mb-2 border-b border-red-200 pb-1">
+                            ${nomeGrupo}
+                        </h3>
+                        <div class="space-y-2">`;
+                
+                items.forEach((acomp, index) => {
+                    const groupId = `grupo-${nomeGrupo}-${acomp.id}`;
+                    const radioName = `grupo-${nomeGrupo}`;
+                    
+                    // Verificar se este item está selecionado
+                    const isSelected = personalizacaoSelecionada.some(s => s.id === acomp.id);
+                    
+                    html += `
+                        <div class="flex items-center justify-between p-3 bg-orange-50 rounded-xl">
+                            <label for="${groupId}" class="flex-1 cursor-pointer">
+                                <div class="font-black text-xs">${acomp.nome}</div>
+                                <div class="text-[9px] text-gray-500">${acomp.descricao || ''}</div>
+                                <div class="text-xs font-black text-red-600 mt-1">R$ ${acomp.preco.toFixed(2).replace('.',',')}</div>
+                            </label>
+                            <input type="radio" 
+                                   name="${radioName}" 
+                                   id="${groupId}"
+                                   value="${acomp.id}"
+                                   data-preco="${acomp.preco}"
+                                   data-nome="${acomp.nome}"
+                                   data-grupo="${nomeGrupo}"
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="selecionarAcompanhamentoGrupo(this)"
+                                   class="w-4 h-4 text-red-600 focus:ring-red-500">
+                        </div>`;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            if (html === '') {
+                html = '<div class="text-center text-gray-400 p-3 text-xs">Nenhum acompanhamento disponível</div>';
+            }
+            
+            container.innerHTML = html;
+            
+            // Se houver seleções prévias, garantir que os radios corretos estejam marcados
+            if (personalizacaoSelecionada.length > 0) {
+                personalizacaoSelecionada.forEach(selecao => {
+                    const radio = document.querySelector(`input[value="${selecao.id}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                });
+            }
+            
+            atualizarResumoPersonalizacao();
+        }
+
+        function selecionarAcompanhamentoGrupo(radio) {
+            if (!radio.checked) return;
+            
+            const id = radio.value;
+            const preco = parseFloat(radio.dataset.preco);
+            const nome = radio.dataset.nome;
+            const grupo = radio.dataset.grupo;
+            
+            // Remover seleção anterior do mesmo grupo
+            personalizacaoSelecionada = personalizacaoSelecionada.filter(item => item.grupo !== grupo);
+            
+            // Adicionar nova seleção
+            personalizacaoSelecionada.push({
+                id,
+                nome,
+                preco,
+                grupo
+            });
+            
+            atualizarResumoPersonalizacao();
+        }
+
+        function selecionarTodosAcompanhamentos() {
+            if (!CATEGORIA_ACOMPANHAMENTOS_ID) return;
+            
+            // Agrupar radios por grupo
+            const grupos = {};
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                const grupo = radio.dataset.grupo;
+                if (!grupos[grupo]) {
+                    grupos[grupo] = [];
+                }
+                grupos[grupo].push(radio);
+            });
+            
+            // Selecionar primeiro de cada grupo
+            Object.values(grupos).forEach(radios => {
+                if (radios.length > 0) {
+                    const primeiro = radios[0];
+                    primeiro.checked = true;
+                    
+                    // Disparar evento de seleção
+                    selecionarAcompanhamentoGrupo(primeiro);
+                }
+            });
+        }
+
+        function atualizarResumoPersonalizacao() {
+            let totalAdicional = 0;
+            const resumo = [];
+            
+            personalizacaoSelecionada.forEach(item => {
+                totalAdicional += item.preco;
+                resumo.push(`${item.nome} (${item.grupo})`);
+            });
+            
+            const totalItem = (itemPersonalizacaoAtual?.preco_base || 0) + totalAdicional;
+            
+            document.getElementById('personalizacao-total').textContent = `R$ ${totalItem.toFixed(2).replace('.', ',')}`;
+            document.getElementById('personalizacao-resumo').innerHTML = resumo.length ? 
+                resumo.map(r => `✓ ${r}`).join('<br>') : 
+                'Nenhum acompanhamento selecionado';
+        }
+
+        function adicionarPersonalizadoAoCarrinho() {
+            if (!itemPersonalizacaoAtual) return;
+            
+            const acompanhamentos = personalizacaoSelecionada.map(item => ({
+                nome: item.nome,
+                preco: item.preco,
+                grupo: item.grupo
+            }));
+            
+            const totalAdicional = acompanhamentos.reduce((acc, item) => acc + item.preco, 0);
+            const totalItem = itemPersonalizacaoAtual.preco_base + totalAdicional;
+            
+            const descricao = acompanhamentos.length ? 
+                `Acompanhamentos: ${acompanhamentos.map(a => a.nome).join(', ')}` : 
+                'Sem acompanhamentos';
+            
+            CARRINHO.push({
+                id: `personalizado-${Date.now()}`,
+                produto_id: itemPersonalizacaoAtual.id,
+                nome: itemPersonalizacaoAtual.nome,
+                categoria_nome: itemPersonalizacaoAtual.categoria_nome,
+                preco_base: itemPersonalizacaoAtual.preco_base,
+                acompanhamentos: acompanhamentos,
+                total_item: totalItem,
+                descricao: descricao,
+                tipo: 'personalizado'
+            });
+            
+            updateCartFooter();
+            fecharPersonalizacao();
+            
+            mostrarPopup('sucesso', 'Adicionado!', `${itemPersonalizacaoAtual.nome} foi adicionado ao carrinho`);
+        }
+
+        function fecharPersonalizacao() {
+            document.getElementById('modal-personalizacao').classList.add('hidden');
+            itemPersonalizacaoAtual = null;
+            
+            // Limpar listener de acompanhamentos
+            if (acompanhamentosListenerUnsubscribe) {
+                acompanhamentosListenerUnsubscribe();
+                acompanhamentosListenerUnsubscribe = null;
+            }
+        }
+
+        // ==================== SUGESTÃO DE BEBIDAS ====================
+        function abrirSugestaoBebidas() {
+            const container = document.getElementById('lista-bebidas-sugestao');
+            
+            if (!CATEGORIA_BEBIDAS_ID) {
+                mostrarPopup('info', 'Sem bebidas', 'Não há bebidas disponíveis no momento');
+                return;
+            }
+            
+            // Buscar apenas bebidas com filtro correto
+            const bebidas = PRODS.filter(p => 
+                p.categoria_id === CATEGORIA_BEBIDAS_ID && 
+                p.disponivel !== false
+            );
+            
+            if (bebidas.length === 0) {
+                mostrarPopup('info', 'Sem bebidas', 'Não há bebidas disponíveis no momento');
+                return;
+            }
+            
+            container.innerHTML = bebidas.map(b => `
+                <div class="bebida-sugestao" onclick="adicionarBebidaSugestao('${b.id}')">
+                    ${b.imagem_url ? `<img src="${b.imagem_url}" alt="${b.nome}">` : '<div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center text-red-600">🥤</div>'}
+                    <div class="info">
+                        <div class="nome">${b.nome}</div>
+                        <div class="text-[9px] text-gray-500">${b.descricao || ''}</div>
+                        <div class="preco">R$ ${b.preco.toFixed(2).replace('.', ',')}</div>
+                    </div>
+                    <i class="fas fa-plus-circle text-red-600 text-lg"></i>
+                </div>
+            `).join('');
+            
+            document.getElementById('modal-sugestao-bebidas').classList.remove('hidden');
+        }
+
+        async function adicionarBebidaSugestao(id) {
             const p = PRODS.find(i => i.id === id);
-            if (!p || p.disponivel === false) {
-                alert("Produto indisponível");
-                return;
-            }
+            if (!p) return;
             
-            CARRINHO.push({ id: p.id, nome: p.nome, descricao: p.descricao || '', preco: p.preco, tipo: 'produto' });
+            CARRINHO.push({
+                id: p.id,
+                nome: p.nome,
+                descricao: p.descricao || '',
+                preco: p.preco,
+                total_item: p.preco,
+                tipo: 'bebida'
+            });
+            
             updateCartFooter();
             
-            const btn = event?.target;
-            if (btn && btn.tagName === 'BUTTON') {
-                const original = btn.innerHTML;
-                btn.innerHTML = '✓';
-                btn.classList.replace('bg-red-600', 'bg-green-600');
-                setTimeout(() => {
-                    btn.innerHTML = original;
-                    btn.classList.replace('bg-green-600', 'bg-red-600');
-                }, 500);
-            }
+            await mostrarPopup('sucesso', 'Bebida adicionada!', `${p.nome} foi adicionada ao carrinho`);
         }
 
-        function removeCart(index) {
+        function fecharSugestaoBebidas() {
+            document.getElementById('modal-sugestao-bebidas').classList.add('hidden');
+        }
+
+        // ==================== CARRINHO ====================
+        async function addCart(id) {
+            // Redirecionar para a função de personalização
+            selecionarProdutoParaPersonalizacao(id);
+        }
+
+        async function removeCart(index) {
+            const item = CARRINHO[index];
             if (index >= 0 && index < CARRINHO.length) {
                 CARRINHO.splice(index, 1);
                 updateCartFooter();
                 renderCarrinhoModal();
+                
+                // Atualizar checkout se estiver aberto
+                if (!document.getElementById('modal-checkout').classList.contains('hidden')) {
+                    renderCheckoutItens();
+                    atualizarTotalCheckout();
+                }
+                
+                await mostrarPopup('info', 'Removido', `${item.nome} foi removido do carrinho`);
                 if (CARRINHO.length === 0) document.getElementById('cart-fixed').classList.add('hidden');
             }
         }
@@ -1414,15 +1929,19 @@
             
             vazio.classList.add('hidden');
             
-            let html = '', total = 0;
+            let html = '', total = calcularTotalCarrinho();
             CARRINHO.forEach((item, i) => {
-                total += item.preco || 0;
+                const itemTotal = item.total_item || item.preco || 0;
+                const descricao = item.acompanhamentos ? 
+                    `Acompanhamentos: ${item.acompanhamentos.map(a => a.nome).join(', ')}` : 
+                    item.descricao || '';
+                
                 html += `
                 <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
                     <div class="flex-1">
                         <div class="font-black text-xs">${item.nome}</div>
-                        <div class="text-[10px] text-gray-400">${item.descricao || ''}</div>
-                        <div class="text-red-600 font-black text-xs mt-1">R$ ${(item.preco || 0).toFixed(2).replace('.',',')}</div>
+                        <div class="text-[10px] text-gray-400">${descricao}</div>
+                        <div class="text-red-600 font-black text-xs mt-1">R$ ${itemTotal.toFixed(2).replace('.',',')}</div>
                     </div>
                     <button onclick="removeCart(${i})" class="bg-orange-100 text-red-600 w-7 h-7 rounded-lg hover:bg-orange-200"><i class="fas fa-trash text-xs"></i></button>
                 </div>`;
@@ -1433,7 +1952,7 @@
         }
 
         function updateCartFooter() {
-            const total = CARRINHO.reduce((a, b) => a + (b.preco || 0), 0);
+            const total = calcularTotalCarrinho();
             document.getElementById('cart-total-display').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
             
             if (CARRINHO.length > 0) {
@@ -1461,7 +1980,7 @@
                 b.classList.add('bg-orange-50', 'border-orange-200');
             });
             document.getElementById('carnes-selecionadas-info').innerHTML = '';
-            atualizarResumo();
+            atualizarResumoMontador();
         }
 
         function carregarTipos() {
@@ -1488,20 +2007,19 @@
             
             espetoMontado.tamanho = { id, nome, preco };
             espetoMontado.precoTamanho = preco;
-            atualizarResumo();
+            atualizarResumoMontador();
         }
 
         function carregarEspetos() {
             const lista = document.getElementById('lista-carnes');
             if (!lista) return;
             
-            const catEspetos = CATS.find(c => c.nome === "Espetos");
-            if (!catEspetos) {
+            if (!CATEGORIA_PRINCIPAL_ID) {
                 lista.innerHTML = '<div class="text-center text-gray-400 p-2 text-xs">Categoria não encontrada</div>';
                 return;
             }
             
-            const espetos = PRODS.filter(p => p.categoria_id === catEspetos.id && p.disponivel !== false);
+            const espetos = PRODS.filter(p => p.categoria_id === CATEGORIA_PRINCIPAL_ID && p.disponivel !== false);
             
             if (espetos.length === 0) {
                 lista.innerHTML = '<div class="text-center text-gray-400 p-2 text-xs">Nenhum espeto</div>';
@@ -1524,7 +2042,7 @@
             
             if (idx === -1) {
                 if (espetoMontado.carnes.length >= 3) {
-                    alert("Máximo 3 espetos!");
+                    mostrarPopup('aviso', 'Limite atingido', 'Máximo 3 espetos por montagem');
                     return;
                 }
                 espetoMontado.carnes.push({ id, nome, preco });
@@ -1541,15 +2059,19 @@
             
             document.getElementById('carnes-selecionadas-info').innerHTML = 
                 espetoMontado.carnes.length > 0 ? `${espetoMontado.carnes.length} de 3` : '';
-            atualizarResumo();
+            atualizarResumoMontador();
         }
 
         function carregarAcompanhamentos() {
             const lista = document.getElementById('lista-acompanhamentos-espeto');
             if (!lista) return;
             
-            const cat = CATS.find(c => c.nome === "Acompanhamentos");
-            const items = cat ? PRODS.filter(p => p.categoria_id === cat.id && p.disponivel !== false) : [];
+            if (!CATEGORIA_ACOMPANHAMENTOS_ID) {
+                lista.innerHTML = '<div class="text-center text-gray-400 p-2 text-xs">Nenhum</div>';
+                return;
+            }
+            
+            const items = PRODS.filter(p => p.categoria_id === CATEGORIA_ACOMPANHAMENTOS_ID && p.disponivel !== false);
             
             if (items.length === 0) {
                 lista.innerHTML = '<div class="text-center text-gray-400 p-2 text-xs">Nenhum</div>';
@@ -1580,15 +2102,19 @@
                 el.classList.add('border-orange-200');
                 el.querySelector('span:last-child').classList.remove('text-white');
             }
-            atualizarResumo();
+            atualizarResumoMontador();
         }
 
         function carregarMolhos() {
             const lista = document.getElementById('lista-molhos');
             if (!lista) return;
             
-            const cat = CATS.find(c => c.nome === "Molhos");
-            const items = cat ? PRODS.filter(p => p.categoria_id === cat.id && p.disponivel !== false) : [];
+            if (!CATEGORIA_MOLHOS_ID) {
+                lista.innerHTML = '<div class="text-center text-gray-400 p-2 text-xs">Nenhum</div>';
+                return;
+            }
+            
+            const items = PRODS.filter(p => p.categoria_id === CATEGORIA_MOLHOS_ID && p.disponivel !== false);
             
             if (items.length === 0) {
                 lista.innerHTML = '<div class="text-center text-gray-400 p-2 text-xs">Nenhum</div>';
@@ -1619,10 +2145,10 @@
                 el.classList.add('border-orange-200');
                 el.querySelector('span:last-child').classList.remove('text-white');
             }
-            atualizarResumo();
+            atualizarResumoMontador();
         }
 
-        function atualizarResumo() {
+        function atualizarResumoMontador() {
             let total = espetoMontado.precoTamanho || 0;
             espetoMontado.carnes.forEach(c => total += c.preco);
             espetoMontado.acompanhamentos.forEach(a => total += a.preco);
@@ -1640,13 +2166,13 @@
             `;
         }
 
-        function finalizarEspetoMontado() {
+        async function finalizarEspetoMontado() {
             if (!espetoMontado.tamanho) {
-                alert("Escolha o tamanho!");
+                await mostrarPopup('aviso', 'Ops!', 'Escolha o tamanho do espeto');
                 return;
             }
             if (espetoMontado.carnes.length === 0) {
-                alert("Escolha pelo menos 1 espeto!");
+                await mostrarPopup('aviso', 'Ops!', 'Escolha pelo menos 1 espeto');
                 return;
             }
             
@@ -1657,14 +2183,16 @@
             
             CARRINHO.push({
                 id: `montado-${Date.now()}`,
-                nome, descricao: desc,
+                nome, 
+                descricao: desc,
                 preco: espetoMontado.precoTotal,
+                total_item: espetoMontado.precoTotal,
                 tipo: 'montado'
             });
             
             updateCartFooter();
             fecharMontadorEspeto();
-            alert(`Adicionado! R$ ${espetoMontado.precoTotal.toFixed(2).replace('.',',')}`);
+            await mostrarPopup('sucesso', 'Espeto montado!', `Adicionado por R$ ${espetoMontado.precoTotal.toFixed(2).replace('.',',')}`);
         }
 
         function fecharMontadorEspeto() {
@@ -1675,15 +2203,15 @@
         // ==================== CHECKOUT ====================
         function abrirCheckout() {
             if (CARRINHO.length === 0) {
-                alert("Carrinho vazio!");
+                mostrarPopup('aviso', 'Carrinho vazio', 'Adicione itens para continuar');
                 return;
             }
             
-            const total = CARRINHO.reduce((a, b) => a + (b.preco || 0), 0);
+            const total = calcularTotalCarrinho();
             const minimo = CONFIG.pedido_minimo || 50;
             
             if (total < minimo) {
-                alert(`Pedido mínimo: R$ ${minimo.toFixed(2).replace('.',',')}`);
+                mostrarPopup('aviso', 'Pedido mínimo', `Valor mínimo: R$ ${minimo.toFixed(2).replace('.',',')}`);
                 return;
             }
             
@@ -1707,30 +2235,60 @@
             setModoConsumo(modoConsumo);
         }
 
+        function calcularTotalCarrinho() {
+            return CARRINHO.reduce((total, item) => {
+                // Usar total_item se existir, senão usar preco (para compatibilidade)
+                return total + (item.total_item || item.preco || 0);
+            }, 0);
+        }
+
         function renderCheckoutItens() {
             const container = document.getElementById('checkout-itens-list');
             let html = '';
             
             CARRINHO.forEach((item, i) => {
+                const itemTotal = item.total_item || item.preco || 0;
+                const descricao = item.acompanhamentos ? 
+                    `Acompanhamentos: ${item.acompanhamentos.map(a => a.nome).join(', ')}` : 
+                    item.descricao || '';
+                
                 html += `
                 <div class="flex justify-between border-b pb-1 items-center">
                     <div class="flex-1">
                         <span class="font-black text-xs">${item.nome}</span>
-                        ${item.descricao ? `<div class="text-[10px] text-gray-500">${item.descricao}</div>` : ''}
+                        ${descricao ? `<div class="text-[10px] text-gray-500">${descricao}</div>` : ''}
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-red-600 font-black text-xs">R$ ${(item.preco || 0).toFixed(2).replace('.',',')}</span>
+                        <span class="text-red-600 font-black text-xs">R$ ${itemTotal.toFixed(2).replace('.',',')}</span>
                         <button onclick="removeCartCheckout(${i})" class="text-red-500"><i class="fas fa-times text-xs"></i></button>
                     </div>
                 </div>`;
             });
             
             container.innerHTML = html;
+            atualizarTotalCheckout();
+        }
+
+        function atualizarTotalCheckout() {
+            const totalItens = calcularTotalCarrinho();
+            const totalFinal = totalItens + tFRETE - vCUPOM;
+            document.getElementById('res-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.',',')}`;
+            
+            // Bloquear finalizar se total for zero
+            const btnFinal = document.getElementById('btn-final-zap');
+            if (totalItens <= 0) {
+                btnFinal.disabled = true;
+                btnFinal.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnFinal.disabled = false;
+                btnFinal.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
         }
 
         function removeCartCheckout(i) {
             removeCart(i);
             renderCheckoutItens();
+            atualizarTotalCheckout();
             if (CARRINHO.length === 0) fecharCheckout();
         }
 
@@ -1755,12 +2313,14 @@
             } else {
                 gpsOk = false;
             }
+            
+            atualizarTotalCheckout();
         }
 
         // ==================== GPS ====================
         function obterGPSCliente() {
             if (!navigator.geolocation) {
-                alert("GPS não suportado");
+                mostrarPopup('erro', 'GPS não suportado', 'Seu navegador não tem GPS');
                 return;
             }
             
@@ -1775,7 +2335,7 @@
                     lngCli = pos.coords.longitude;
                     
                     if (!CONFIG.lat_churrascaria || !CONFIG.lng_churrascaria) {
-                        alert("Loja sem localização");
+                        mostrarPopup('aviso', 'Loja sem localização', 'Contate o administrador');
                         btn.innerText = original;
                         btn.disabled = false;
                         return;
@@ -1797,9 +2357,13 @@
                     btn.className = "w-full bg-green-600 text-white p-3 rounded-xl text-xs font-black";
                     gpsOk = true;
                     btn.disabled = false;
+                    
+                    atualizarTotalCheckout();
+                    
+                    mostrarPopup('sucesso', 'Frete calculado', `Distância: ${dKM.toFixed(1)}km - Taxa: R$ ${tFRETE.toFixed(2).replace('.',',')}`);
                 },
                 error => {
-                    alert("Erro GPS: " + (error.code === 1 ? "Permissão negada" : "Tente novamente"));
+                    mostrarPopup('erro', 'Erro GPS', error.code === 1 ? 'Permissão negada' : 'Tente novamente');
                     btn.innerText = original;
                     btn.disabled = false;
                 }
@@ -1808,20 +2372,28 @@
 
         // ==================== PEDIDO ====================
         async function enviarPedido() {
+            const totalCarrinho = calcularTotalCarrinho();
+            
+            // Verificar se total é zero
+            if (totalCarrinho <= 0) {
+                await mostrarPopup('erro', 'Carrinho vazio', 'Adicione itens ao carrinho');
+                return;
+            }
+            
             const nome = document.getElementById('f-nome').value.trim();
             if (modoConsumo === 'delivery' && !gpsOk) {
-                alert("Calcule o frete primeiro!");
+                await mostrarPopup('aviso', 'Frete obrigatório', 'Calcule o frete primeiro');
                 return;
             }
             if (!nome) {
-                alert("Digite seu nome!");
+                await mostrarPopup('aviso', 'Nome obrigatório', 'Digite seu nome');
                 document.getElementById('f-nome').focus();
                 return;
             }
             
             const whatsapp = document.getElementById('f-whatsapp').value.replace(/\D/g, '');
             if (whatsapp.length < 10) {
-                alert("WhatsApp inválido!");
+                await mostrarPopup('aviso', 'WhatsApp inválido', 'Digite um número válido');
                 document.getElementById('f-whatsapp').focus();
                 return;
             }
@@ -1830,13 +2402,13 @@
                 const rua = document.getElementById('f-rua').value.trim();
                 const bairro = document.getElementById('f-bairro').value.trim();
                 if (!rua || !bairro) {
-                    alert("Preencha endereço completo!");
+                    await mostrarPopup('aviso', 'Endereço incompleto', 'Preencha rua e bairro');
                     return;
                 }
             }
             
             const ag = CARRINHO.reduce((acc, i) => { acc[i.nome] = (acc[i.nome] || 0) + 1; return acc; }, {});
-            const totalFinal = CARRINHO.reduce((a, b) => a + (b.preco || 0), 0) + tFRETE - vCUPOM;
+            const totalFinal = totalCarrinho + tFRETE - vCUPOM;
             const pagamento = document.getElementById('f-pag').value;
             
             const pedido = {
@@ -1903,6 +2475,7 @@
                 updateCartFooter();
                 
                 enviarNotificacao("Pedido enviado!", "Acompanhe pelo link");
+                await mostrarPopup('sucesso', 'Pedido enviado!', 'Você será redirecionado para o WhatsApp');
                 
                 setTimeout(() => {
                     window.open(`https://api.whatsapp.com/send?phone=${(CONFIG.whatsapp || '5599999999999').replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`, '_blank');
@@ -1911,7 +2484,7 @@
                 
             } catch (error) {
                 console.error("Erro pedido:", error);
-                alert("Erro ao enviar!");
+                await mostrarPopup('erro', 'Erro ao enviar', 'Tente novamente');
                 document.getElementById('btn-final-zap').innerHTML = "🚀 FINALIZAR PEDIDO";
                 document.getElementById('btn-final-zap').disabled = false;
             }
@@ -1953,7 +2526,7 @@
                 document.getElementById('view-admin').classList.remove('hidden');
                 document.getElementById('admin-user').innerText = currentUser.email;
                 
-                switchTab('pedidos');
+                switchTab('dashboard');
                 setTimeout(() => {
                     listenPedidos();
                     atualizarDashboard();
@@ -1976,28 +2549,56 @@
                 currentUser = null;
                 document.getElementById('view-admin').classList.add('hidden');
                 document.getElementById('view-cliente').classList.remove('hidden');
+                await mostrarPopup('info', 'Logout', 'Você saiu do painel');
             } catch (error) {
                 console.error("Erro sair:", error);
             }
         }
 
         function switchTab(tab) {
+            // Atualizar abas
             document.querySelectorAll('.admin-tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.getElementById(`tab-${tab}`).classList.add('active');
             
+            // Dashboard especial (sempre visível, mas podemos esconder se não for a aba ativa)
+            const dashboardSection = document.getElementById('dashboard-section');
+            if (tab === 'dashboard') {
+                dashboardSection.style.display = 'block';
+            } else {
+                dashboardSection.style.display = 'none';
+            }
+            
+            // Esconder todas as seções de conteúdo
             ['pedidos', 'produtos', 'categorias', 'cupons', 'config', 'promocoes', 'tamanhos'].forEach(t => {
                 const sec = document.getElementById(`sec-${t}`);
-                if (sec) sec.classList.toggle('hidden', t !== tab);
+                if (sec) sec.classList.add('hidden');
             });
             
-            if (tab === 'produtos') renderProdutosADM();
-            else if (tab === 'categorias') renderCategoriasADM();
-            else if (tab === 'cupons') renderCuponsADM();
-            else if (tab === 'config') renderConfigADM();
-            else if (tab === 'promocoes') renderPromocoesADM();
-            else if (tab === 'tamanhos') renderTamanhosADM();
+            // Mostrar a seção selecionada
+            if (tab !== 'dashboard') {
+                const sec = document.getElementById(`sec-${tab}`);
+                if (sec) {
+                    sec.classList.remove('hidden');
+                    
+                    // Carregar dados específicos
+                    if (tab === 'produtos') renderProdutosADM();
+                    else if (tab === 'categorias') renderCategoriasADM();
+                    else if (tab === 'cupons') renderCuponsADM();
+                    else if (tab === 'config') renderConfigADM();
+                    else if (tab === 'promocoes') renderPromocoesADM();
+                    else if (tab === 'tamanhos') renderTamanhosADM();
+                    else if (tab === 'pedidos') {
+                        // Recarregar pedidos
+                        const { db, firestore } = getFirebaseRefs();
+                        firestore.getDocs(firestore.collection(db, "pedidos")).then(snap => {
+                            const pedidos = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                            renderPedidosADM(pedidos);
+                        });
+                    }
+                }
+            }
         }
 
         function renderPedidosADM(pedidos) {
@@ -2096,8 +2697,12 @@
                     <p><strong>Pagamento:</strong> ${p.pagamento}</p>
                 </div>`;
                 
-                document.getElementById('print-content').innerHTML = html;
-                setTimeout(() => window.print(), 200);
+                document.getElementById('secao-impressao').innerHTML = html;
+                document.getElementById('secao-impressao').classList.remove('hidden');
+                setTimeout(() => {
+                    window.print();
+                    document.getElementById('secao-impressao').classList.add('hidden');
+                }, 200);
             } catch (error) {
                 console.error("Erro imprimir:", error);
             }
@@ -2136,13 +2741,15 @@
                 }
                 
                 enviarNotificacao("Status atualizado", `Pedido #${id.slice(-6)}: ${novo}`);
+                await mostrarPopup('info', 'Status atualizado', `Pedido ${novo}`);
             } catch (error) {
                 console.error("Erro status:", error);
             }
         }
 
         async function apagarPedido(id) {
-            if (!confirm("Apagar este pedido?")) return;
+            const result = await mostrarConfirmacao('Apagar pedido?', 'Esta ação não pode ser desfeita');
+            if (!result.isConfirmed) return;
             
             try {
                 const { db, firestore } = getFirebaseRefs();
@@ -2150,8 +2757,11 @@
                 
                 const el = document.getElementById(`pedido-${id}`);
                 if (el) el.remove();
+                
+                await mostrarPopup('sucesso', 'Pedido apagado', 'Removido com sucesso');
             } catch (error) {
                 console.error("Erro apagar:", error);
+                await mostrarPopup('erro', 'Erro ao apagar', 'Tente novamente');
             }
         }
 
@@ -2176,7 +2786,7 @@
                     const cat = CATS.find(c => c.id === p.categoria_id);
                     html += `
                     <div class="bg-white p-3 rounded-xl shadow-sm flex gap-2">
-                        <img src="${p.imagem_url || 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png'}" class="w-14 h-14 rounded-lg object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'">
+                        ${p.imagem_url ? `<img src="${p.imagem_url}" class="w-14 h-14 rounded-lg object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'">` : ''}
                         <div class="flex-1">
                             <div class="font-black text-xs">${p.nome}</div>
                             <div class="text-[9px] text-gray-400">${cat?.nome || '--'}</div>
@@ -2211,10 +2821,11 @@
                     imagem_url: "",
                     disponivel: true
                 });
-                alert("Produto criado!");
+                await mostrarPopup('sucesso', 'Produto criado', 'Adicione as informações');
                 renderProdutosADM();
             } catch (error) {
                 console.error("Erro criar:", error);
+                await mostrarPopup('erro', 'Erro ao criar', 'Tente novamente');
             }
         }
 
@@ -2248,9 +2859,10 @@
                 
                 fecharModalEditar();
                 renderProdutosADM();
-                alert("Salvo!");
+                await mostrarPopup('sucesso', 'Produto atualizado', 'Alterações salvas');
             } catch (error) {
                 console.error("Erro salvar:", error);
+                await mostrarPopup('erro', 'Erro ao salvar', 'Tente novamente');
             }
         }
 
@@ -2263,19 +2875,24 @@
                 const { db, firestore } = getFirebaseRefs();
                 await firestore.updateDoc(firestore.doc(db, "produtos", id), { disponivel: !atual });
                 renderProdutosADM();
+                await mostrarPopup('info', `Produto ${!atual ? 'ativado' : 'desativado'}`, 'Status alterado');
             } catch (error) {
                 console.error("Erro toggle:", error);
             }
         }
 
         async function excluirProduto(id) {
-            if (!confirm("Excluir produto?")) return;
+            const result = await mostrarConfirmacao('Excluir produto?', 'Esta ação não pode ser desfeita');
+            if (!result.isConfirmed) return;
+            
             try {
                 const { db, firestore } = getFirebaseRefs();
                 await firestore.deleteDoc(firestore.doc(db, "produtos", id));
                 renderProdutosADM();
+                await mostrarPopup('sucesso', 'Produto excluído', 'Removido com sucesso');
             } catch (error) {
                 console.error("Erro excluir:", error);
+                await mostrarPopup('erro', 'Erro ao excluir', 'Tente novamente');
             }
         }
 
@@ -2328,8 +2945,10 @@
                 });
                 await loadData();
                 renderCategoriasADM();
+                await mostrarPopup('sucesso', 'Categoria criada', 'Adicionada com sucesso');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao criar', 'Tente novamente');
             }
         }
 
@@ -2345,20 +2964,26 @@
                 await firestore.updateDoc(firestore.doc(db, "categorias", id), { nome: novo });
                 await loadData();
                 renderCategoriasADM();
+                await mostrarPopup('sucesso', 'Categoria atualizada', 'Nome alterado');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao editar', 'Tente novamente');
             }
         }
 
         async function excluirCategoria(id) {
-            if (!confirm("Excluir categoria?")) return;
+            const result = await mostrarConfirmacao('Excluir categoria?', 'Produtos serão movidos');
+            if (!result.isConfirmed) return;
+            
             try {
                 const { db, firestore } = getFirebaseRefs();
                 await firestore.deleteDoc(firestore.doc(db, "categorias", id));
                 await loadData();
                 renderCategoriasADM();
+                await mostrarPopup('sucesso', 'Categoria excluída', 'Removida com sucesso');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao excluir', 'Tente novamente');
             }
         }
 
@@ -2419,8 +3044,10 @@
                 const snap = await firestore.getDocs(firestore.collection(db, "cupons"));
                 CUPONS = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderCuponsADM();
+                await mostrarPopup('sucesso', 'Cupom criado', 'Adicionado com sucesso');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao criar', 'Tente novamente');
             }
         }
 
@@ -2431,20 +3058,26 @@
                 const snap = await firestore.getDocs(firestore.collection(db, "cupons"));
                 CUPONS = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderCuponsADM();
+                await mostrarPopup('info', `Cupom ${!ativo ? 'ativado' : 'desativado'}`, 'Status alterado');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao alterar', 'Tente novamente');
             }
         }
 
         async function excluirCupom(id) {
-            if (!confirm("Excluir cupom?")) return;
+            const result = await mostrarConfirmacao('Excluir cupom?', 'Esta ação não pode ser desfeita');
+            if (!result.isConfirmed) return;
+            
             try {
                 const { db, firestore } = getFirebaseRefs();
                 await firestore.deleteDoc(firestore.doc(db, "cupons", id));
                 CUPONS = CUPONS.filter(c => c.id !== id);
                 renderCuponsADM();
+                await mostrarPopup('sucesso', 'Cupom excluído', 'Removido com sucesso');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao excluir', 'Tente novamente');
             }
         }
 
@@ -2501,15 +3134,17 @@
 
         async function obterLocalizacaoLoja() {
             if (!navigator.geolocation) {
-                alert("GPS não suportado");
+                await mostrarPopup('erro', 'GPS não suportado', 'Seu navegador não tem GPS');
                 return;
             }
             
             navigator.geolocation.getCurrentPosition(pos => {
                 document.getElementById('cfg-lat').value = pos.coords.latitude;
                 document.getElementById('cfg-lng').value = pos.coords.longitude;
-                alert("Localização obtida!");
-            }, () => alert("Erro ao obter localização"));
+                mostrarPopup('sucesso', 'Localização obtida', 'Coordenadas atualizadas');
+            }, () => {
+                mostrarPopup('erro', 'Erro GPS', 'Não foi possível obter localização');
+            });
         }
 
         async function salvarConfig() {
@@ -2535,9 +3170,10 @@
                 document.getElementById('cli-status-loja').className = config.loja_aberta 
                     ? 'inline-block px-3 py-0.5 text-xs font-black rounded-full bg-green-500 text-white'
                     : 'inline-block px-3 py-0.5 text-xs font-black rounded-full bg-gray-500 text-white';
-                alert("Salvo!");
+                await mostrarPopup('sucesso', 'Configurações salvas', 'Alterações aplicadas');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao salvar', 'Tente novamente');
             }
         }
 
@@ -2583,13 +3219,11 @@
             document.getElementById('promocao-preco').value = PROMOCAO.preco || 89.90;
             document.getElementById('promocao-preco-original').value = PROMOCAO.preco_original || 119.90;
             document.getElementById('promo-imagem-preview').src = PROMOCAO.imagem_url || '';
-            document.getElementById('promocao-ativa').checked = PROMOCAO.ativa !== false;
             
-            const catEspetos = CATS.find(c => c.nome === "Espetos");
             const container = document.getElementById('promocao-carnes-container');
             
-            if (catEspetos) {
-                const espetos = PRODS.filter(p => p.categoria_id === catEspetos.id);
+            if (CATEGORIA_PRINCIPAL_ID) {
+                const espetos = PRODS.filter(p => p.categoria_id === CATEGORIA_PRINCIPAL_ID);
                 container.innerHTML = espetos.map(e => `
                     <div class="flex items-center p-1.5 bg-orange-50 rounded-lg">
                         <input type="checkbox" id="carne-${e.id}" value="${e.id}" ${PROMOCAO.carnes_inclusas?.includes(e.id) ? 'checked' : ''} class="mr-2">
@@ -2617,7 +3251,7 @@
                     preco: parseFloat(document.getElementById('promocao-preco').value) || 89.90,
                     preco_original: parseFloat(document.getElementById('promocao-preco-original').value) || 119.90,
                     imagem_url: document.getElementById('promo-imagem-preview').src,
-                    ativa: document.getElementById('promocao-ativa').checked,
+                    ativa: true,
                     carnes_inclusas: selecionadas,
                     updated_at: Date.now()
                 };
@@ -2627,9 +3261,10 @@
                 renderPromocaoCliente();
                 fecharModalPromocao();
                 renderPromocoesADM();
-                alert("Salvo!");
+                await mostrarPopup('sucesso', 'Promoção salva', 'Alterações aplicadas');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao salvar', 'Tente novamente');
             }
         }
 
@@ -2639,8 +3274,10 @@
                 await firestore.updateDoc(firestore.doc(db, "promocoes", "dia"), { ativa: ativo });
                 PROMOCAO.ativa = ativo;
                 renderPromocaoCliente();
+                await mostrarPopup('info', `Promoção ${ativo ? 'ativada' : 'desativada'}`, 'Status alterado');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao alterar', 'Tente novamente');
             }
         }
 
@@ -2695,8 +3332,10 @@
                 });
                 await carregarTamanhos();
                 renderTamanhosADM();
+                await mostrarPopup('sucesso', 'Tamanho criado', 'Adicionado com sucesso');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao criar', 'Tente novamente');
             }
         }
 
@@ -2729,9 +3368,10 @@
                 fecharModalEditarTamanho();
                 await carregarTamanhos();
                 renderTamanhosADM();
-                alert("Salvo!");
+                await mostrarPopup('sucesso', 'Tamanho atualizado', 'Alterações salvas');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao salvar', 'Tente novamente');
             }
         }
 
@@ -2745,31 +3385,37 @@
                 await firestore.updateDoc(firestore.doc(db, "tamanhos_espeto", id), { disponivel: !atual });
                 await carregarTamanhos();
                 renderTamanhosADM();
+                await mostrarPopup('info', `Tamanho ${!atual ? 'ativado' : 'desativado'}`, 'Status alterado');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao alterar', 'Tente novamente');
             }
         }
 
         async function excluirTamanho(id) {
-            if (!confirm("Excluir tamanho?")) return;
+            const result = await mostrarConfirmacao('Excluir tamanho?', 'Esta ação não pode ser desfeita');
+            if (!result.isConfirmed) return;
+            
             try {
                 const { db, firestore } = getFirebaseRefs();
                 await firestore.deleteDoc(firestore.doc(db, "tamanhos_espeto", id));
                 await carregarTamanhos();
                 renderTamanhosADM();
+                await mostrarPopup('sucesso', 'Tamanho excluído', 'Removido com sucesso');
             } catch (error) {
                 console.error("Erro:", error);
+                await mostrarPopup('erro', 'Erro ao excluir', 'Tente novamente');
             }
         }
 
         // ==================== CLIENTE - PROMOÇÃO ====================
         function abrirSelecaoCarnesPromocao() {
             if (CONFIG.loja_aberta === false) {
-                alert("Loja fechada");
+                mostrarPopup('aviso', 'Loja fechada', 'Volte mais tarde');
                 return;
             }
             if (PROMOCAO.ativa === false) {
-                alert("Promoção indisponível");
+                mostrarPopup('aviso', 'Promoção indisponível', 'Não está ativa no momento');
                 return;
             }
             
@@ -2782,13 +3428,12 @@
             const lista = document.getElementById('lista-carnes-promocao');
             if (!lista) return;
             
-            const catEspetos = CATS.find(c => c.nome === "Espetos");
-            if (!catEspetos) {
+            if (!CATEGORIA_PRINCIPAL_ID) {
                 lista.innerHTML = '<div class="text-center p-3 text-sm">Sem espetos</div>';
                 return;
             }
             
-            const espetos = PRODS.filter(p => p.categoria_id === catEspetos.id && p.disponivel !== false);
+            const espetos = PRODS.filter(p => p.categoria_id === CATEGORIA_PRINCIPAL_ID && p.disponivel !== false);
             
             lista.innerHTML = espetos.map(e => `
                 <div onclick="toggleCarnePromocao('${e.id}', '${e.nome.replace(/'/g, "\\'")}', this)" 
@@ -2803,7 +3448,7 @@
             
             if (idx === -1) {
                 if (carnesSelecionadasPromocao.length >= 3) {
-                    alert("Máximo 3 espetos!");
+                    mostrarPopup('aviso', 'Limite', 'Máximo 3 espetos');
                     return;
                 }
                 carnesSelecionadasPromocao.push({ id, nome });
@@ -2820,7 +3465,7 @@
                 carnesSelecionadasPromocao.length ? carnesSelecionadasPromocao.map(c => c.nome).join(', ') : 'Nenhum selecionado';
         }
 
-        function adicionarPromocaoComCarnes() {
+        async function adicionarPromocaoComCarnes() {
             let desc = PROMOCAO.descricao || '';
             if (carnesSelecionadasPromocao.length) {
                 desc += ` (Espetos: ${carnesSelecionadasPromocao.map(c => c.nome).join(', ')})`;
@@ -2831,12 +3476,13 @@
                 nome: `🔥 ${PROMOCAO.titulo || "PROMOÇÃO"}`,
                 descricao: desc,
                 preco: PROMOCAO.preco || 89.90,
+                total_item: PROMOCAO.preco || 89.90,
                 tipo: 'promocao'
             });
             
             updateCartFooter();
             fecharModalCarnesPromocao();
-            alert(`Promoção adicionada! R$ ${(PROMOCAO.preco || 89.90).toFixed(2).replace('.',',')}`);
+            await mostrarPopup('sucesso', 'Promoção adicionada!', `R$ ${(PROMOCAO.preco || 89.90).toFixed(2).replace('.',',')}`);
         }
 
         function fecharModalCarnesPromocao() {
@@ -2862,16 +3508,16 @@
             } catch (e) {}
         }
 
-        function aplicarCupom() {
+        async function aplicarCupom() {
             const cod = document.getElementById('f-cupom').value.trim().toUpperCase();
             if (!cod) {
-                alert("Digite um cupom");
+                await mostrarPopup('aviso', 'Digite um cupom', 'Campo vazio');
                 return;
             }
             
             const cupom = CUPONS.find(c => c.codigo === cod && c.ativo !== false);
             if (!cupom) {
-                alert("Cupom inválido");
+                await mostrarPopup('erro', 'Cupom inválido', 'Código não encontrado');
                 return;
             }
             
@@ -2880,6 +3526,8 @@
             document.getElementById('div-desconto-txt').innerHTML = `<span>Desconto:</span><span>-R$ ${vCUPOM.toFixed(2).replace('.',',')}</span>`;
             document.getElementById('f-cupom').value = '';
             document.getElementById('f-cupom').placeholder = `Cupom ${cod} aplicado!`;
+            atualizarTotalCheckout();
+            await mostrarPopup('sucesso', 'Cupom aplicado!', `Desconto de R$ ${vCUPOM.toFixed(2).replace('.',',')}`);
         }
 
         // ==================== EXPORT ====================
@@ -2900,8 +3548,6 @@
         window.abrirCheckout = abrirCheckout;
         window.abrirMontadorEspeto = abrirMontadorEspeto;
         window.fecharMontadorEspeto = fecharMontadorEspeto;
-        window.abrirDetalhesProduto = abrirDetalhesProduto;
-        window.fecharDetalhesProduto = () => document.getElementById('modal-detalhes')?.remove();
         window.selecionarTamanho = selecionarTamanho;
         window.toggleCarne = toggleCarne;
         window.toggleAcompanhamento = toggleAcompanhamento;
@@ -2945,6 +3591,22 @@
         window.fecharModalUpload = fecharModalUpload;
         window.uploadImagem = previewImagem;
         window.confirmarUpload = confirmarUpload;
+        
+        // Novas funções de personalização
+        window.selecionarProdutoParaPersonalizacao = selecionarProdutoParaPersonalizacao;
+        window.selecionarAcompanhamentoGrupo = selecionarAcompanhamentoGrupo;
+        window.selecionarTodosAcompanhamentos = selecionarTodosAcompanhamentos;
+        window.adicionarPersonalizadoAoCarrinho = adicionarPersonalizadoAoCarrinho;
+        window.fecharPersonalizacao = fecharPersonalizacao;
+        
+        // Novas funções de sugestão de bebidas
+        window.abrirSugestaoBebidas = abrirSugestaoBebidas;
+        window.adicionarBebidaSugestao = adicionarBebidaSugestao;
+        window.fecharSugestaoBebidas = fecharSugestaoBebidas;
+        
+        // Funções de cálculo
+        window.calcularTotalCarrinho = calcularTotalCarrinho;
+        window.atualizarTotalCheckout = atualizarTotalCheckout;
 
         // Iniciar
         if (document.readyState === 'loading') {
