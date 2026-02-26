@@ -77,11 +77,13 @@
         .hidden { display: none !important; }
         
         /* Status das Comandas */
-        .status-novo { border-left: 8px solid #b91c1c !important; background: #fff7ed; }
-        .status-em_preparo { border-left: 8px solid #c2410c !important; background: #fff7ed; }
-        .status-pronto { border-left: 8px solid #15803d !important; background: #f0fdf4; }
-        .status-finalizado { border-left: 8px solid #7e22ce !important; background: #faf5ff; }
-        .status-cancelado { border-left: 8px solid #4b5563 !important; background: #f3f4f6; }
+        .status-Novo { border-left: 8px solid #b91c1c !important; background: #fff7ed; }
+        .status-Preparando { border-left: 8px solid #c2410c !important; background: #fff7ed; }
+        .status-Assando { border-left: 8px solid #b45309 !important; background: #fffbeb; }
+        .status-Pronto { border-left: 8px solid #15803d !important; background: #f0fdf4; }
+        .status-Saiu { border-left: 8px solid #1d4ed8 !important; background: #eff6ff; }
+        .status-Finalizado { border-left: 8px solid #7e22ce !important; background: #faf5ff; }
+        .status-Cancelado { border-left: 8px solid #4b5563 !important; background: #f3f4f6; }
 
         /* Upload de imagem */
         .upload-area { border: 2px dashed #fca5a5; transition: all 0.3s; }
@@ -1480,6 +1482,7 @@
             div.innerHTML = html;
         }
 
+        // CORREÇÃO: Renderizar cardápio com suporte a imagens externas
         function renderCardapio(cid) {
             curCat = cid;
             renderFiltros();
@@ -1507,13 +1510,21 @@
                                cat?.nome === "Sobremesas" ? "bg-purple-100 text-purple-700" :
                                "bg-gray-100 text-gray-700";
                 
+                // CORREÇÃO: Tratar imagem do produto - aceitar qualquer URL
+                const imagemSrc = p.imagem_url && p.imagem_url.trim() !== "" 
+                    ? p.imagem_url 
+                    : "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
+                
                 html += `
                 <div class="bg-white rounded-2xl shadow-sm p-3 flex gap-3 border border-orange-100 items-center cursor-pointer hover:shadow-md transition produto-card" onclick="selecionarProdutoParaPersonalizacao('${p.id}')">
-                    ${p.imagem_url ? `
                     <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                        <img src="${p.imagem_url}" class="w-full h-full object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'">
+                        <img src="${imagemSrc}" 
+                             class="w-full h-full object-cover" 
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'"
+                             alt="${p.nome}">
                     </div>
-                    ` : ''}
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-start gap-1">
                             <h3 class="font-black text-sm uppercase truncate">${p.nome}</h3>
@@ -2349,15 +2360,17 @@
             );
         }
 
-        // ==================== PEDIDO ====================
+        // ==================== PEDIDO (CORRIGIDO) ====================
         async function enviarPedido() {
             const totalCarrinho = calcularTotalCarrinho();
             
-            if (CARRINHO.length === 0) {
+            // Verificar se carrinho está vazio
+            if (!CARRINHO || CARRINHO.length === 0) {
                 await mostrarPopup('aviso', 'Carrinho vazio', 'Adicione itens ao carrinho');
                 return;
             }
             
+            // Verificar se total é zero
             if (totalCarrinho <= 0) {
                 await mostrarPopup('erro', 'Carrinho vazio', 'Adicione itens ao carrinho');
                 return;
@@ -2390,6 +2403,7 @@
                 }
             }
             
+            // Criar objeto de itens para Firebase
             const ag = {};
             const itensDetalhados = [];
             
@@ -2439,12 +2453,22 @@
                 
                 const docRef = await firestore.addDoc(firestore.collection(db, "pedidos"), pedido);
                 
-                const numero = CONFIG.whatsapp ? CONFIG.whatsapp.replace(/\D/g, '') : "5599999999999";
-                const numeroCompleto = numero.startsWith('55') ? numero : `55${numero}`;
+                // CORREÇÃO: Formatar número do WhatsApp corretamente
+                let numero = CONFIG.whatsapp ? CONFIG.whatsapp.replace(/\D/g, '') : "5599999999999";
                 
+                // Garantir que tem DDI 55
+                if (!numero.startsWith('55')) {
+                    numero = '55' + numero;
+                }
+                
+                // Montar mensagem detalhada
                 const mensagem = montarResumoPedidoWhatsApp(pedido, docRef.id, itensDetalhados, totalCarrinho);
+                
+                // Codificar a mensagem
                 const mensagemCodificada = encodeURIComponent(mensagem);
-                const urlWhatsApp = `https://wa.me/${numeroCompleto}?text=${mensagemCodificada}`;
+                
+                // URL oficial do WhatsApp usando wa.me
+                const urlWhatsApp = `https://wa.me/${numero}?text=${mensagemCodificada}`;
                 
                 localStorage.setItem('churrasco_memoria', JSON.stringify({
                     nome, zap: whatsapp,
@@ -2477,16 +2501,15 @@
         function montarResumoPedidoWhatsApp(pedido, pedidoId, itensDetalhados, subtotal) {
             let mensagem = `*🥩 ${CONFIG.nome_churrascaria || 'CHURRASCO PRIME'}*\n`;
             mensagem += `════════════════════\n`;
-            mensagem += `*Pedido:* #${pedidoId.slice(-6)}\n`;
             mensagem += `*Cliente:* ${pedido.cliente_nome}\n`;
-            mensagem += `*WhatsApp:* ${pedido.cliente_whatsapp}\n`;
-            mensagem += `*Modo:* ${pedido.modo_consumo?.toUpperCase() || 'DELIVERY'}\n`;
             
             if (pedido.modo_consumo === 'delivery') {
                 mensagem += `*Endereço:* ${pedido.rua}, ${pedido.numero}`;
                 if (pedido.bairro) mensagem += ` - ${pedido.bairro}`;
                 mensagem += `\n`;
                 if (pedido.complemento) mensagem += `*Complemento:* ${pedido.complemento}\n`;
+            } else {
+                mensagem += `*Retirada:* ${pedido.modo_consumo?.toUpperCase() || 'LOCAL'}\n`;
             }
             
             mensagem += `════════════════════\n`;
@@ -2623,7 +2646,7 @@
             }
         }
 
-        // ==================== ADMIN - PEDIDOS (CORRIGIDO) ====================
+        // ==================== ADMIN - PEDIDOS ====================
         function renderPedidosADM(pedidos) {
             const sec = document.getElementById('sec-pedidos');
             if (!sec) return;
@@ -2748,7 +2771,7 @@
             `;
         }
 
-        // ==================== ADMIN - IMPRESSÃO (CORRIGIDA) ====================
+        // ==================== ADMIN - IMPRESSÃO ====================
         async function imprimirPedido(id) {
             try {
                 const { db, firestore } = getFirebaseRefs();
@@ -2997,7 +3020,7 @@
             }
         }
 
-        // ==================== ADMIN - PRODUTOS (COM LINK DE IMAGEM) ====================
+        // ==================== ADMIN - PRODUTOS ====================
         async function renderProdutosADM() {
             const sec = document.getElementById('sec-produtos');
             if (!sec) return;
@@ -3016,9 +3039,20 @@
             } else {
                 PRODS.forEach(p => {
                     const cat = CATS.find(c => c.id === p.categoria_id);
+                    
+                    // CORREÇÃO: Tratar imagem do produto
+                    const imagemSrc = p.imagem_url && p.imagem_url.trim() !== "" 
+                        ? p.imagem_url 
+                        : "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
+                    
                     html += `
                     <div class="bg-white p-3 rounded-xl shadow-sm flex gap-2">
-                        ${p.imagem_url ? `<img src="${p.imagem_url}" class="w-14 h-14 rounded-lg object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'">` : ''}
+                        <img src="${imagemSrc}" 
+                             class="w-14 h-14 rounded-lg object-cover" 
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             onerror="this.src='https://cdn-icons-png.flaticon.com/512/3075/3075977.png'"
+                             alt="${p.nome}">
                         <div class="flex-1">
                             <div class="font-black text-xs">${p.nome}</div>
                             <div class="text-[9px] text-gray-400">${cat?.nome || '--'}</div>
