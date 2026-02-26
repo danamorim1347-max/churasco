@@ -3020,7 +3020,7 @@
             }
         }
 
-        // ==================== ADMIN - PRODUTOS ====================
+        // ==================== ADMIN - PRODUTOS (COM SUPORTE A LINKS EXTERNOS) ====================
         async function renderProdutosADM() {
             const sec = document.getElementById('sec-produtos');
             if (!sec) return;
@@ -3040,7 +3040,7 @@
                 PRODS.forEach(p => {
                     const cat = CATS.find(c => c.id === p.categoria_id);
                     
-                    // CORREÇÃO: Tratar imagem do produto
+                    // CORREÇÃO: Tratar imagem do produto - aceitar qualquer URL
                     const imagemSrc = p.imagem_url && p.imagem_url.trim() !== "" 
                         ? p.imagem_url 
                         : "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
@@ -3080,6 +3080,7 @@
             try {
                 const { db, firestore } = getFirebaseRefs();
                 
+                // CORREÇÃO: Perguntar se quer adicionar imagem por link
                 const { value: imagemOption } = await Swal.fire({
                     title: 'Adicionar imagem?',
                     text: 'Escolha como deseja adicionar a imagem',
@@ -3096,7 +3097,7 @@
 
                 let imagemUrl = '';
                 
-                if (imagemOption === true) {
+                if (imagemOption === true) { // Link da Internet
                     const { value: url } = await Swal.fire({
                         title: 'Link da imagem',
                         input: 'url',
@@ -3108,7 +3109,7 @@
                     if (url) {
                         imagemUrl = url;
                     }
-                } else if (imagemOption === false) {
+                } else if (imagemOption === false) { // Upload
                     uploadContexto = 'produto_novo';
                     uploadId = null;
                     document.getElementById('modal-upload').classList.remove('hidden');
@@ -3175,6 +3176,7 @@
                 const { db, firestore } = getFirebaseRefs();
                 const id = document.getElementById('edit-id-hidden').value;
                 
+                // CORREÇÃO: Perguntar se quer alterar a imagem
                 const { value: imagemOption } = await Swal.fire({
                     title: 'Imagem do produto',
                     text: 'Deseja alterar a imagem?',
@@ -3191,7 +3193,7 @@
 
                 let imagemUrl = document.getElementById('edit-imagem-preview').src;
                 
-                if (imagemOption === true) {
+                if (imagemOption === true) { // Link da Internet
                     const { value: url } = await Swal.fire({
                         title: 'Link da imagem',
                         input: 'url',
@@ -3205,7 +3207,7 @@
                         imagemUrl = url;
                         document.getElementById('edit-imagem-preview').src = url;
                     }
-                } else if (imagemOption === false) {
+                } else if (imagemOption === false) { // Upload
                     uploadContexto = 'produto';
                     uploadId = id;
                     document.getElementById('modal-upload').classList.remove('hidden');
