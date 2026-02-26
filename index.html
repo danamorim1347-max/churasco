@@ -77,13 +77,11 @@
         .hidden { display: none !important; }
         
         /* Status das Comandas */
-        .status-Novo { border-left: 8px solid #b91c1c !important; background: #fff7ed; }
-        .status-Preparando { border-left: 8px solid #c2410c !important; background: #fff7ed; }
-        .status-Assando { border-left: 8px solid #b45309 !important; background: #fffbeb; }
-        .status-Pronto { border-left: 8px solid #15803d !important; background: #f0fdf4; }
-        .status-Saiu { border-left: 8px solid #1d4ed8 !important; background: #eff6ff; }
-        .status-Finalizado { border-left: 8px solid #7e22ce !important; background: #faf5ff; }
-        .status-Cancelado { border-left: 8px solid #4b5563 !important; background: #f3f4f6; }
+        .status-novo { border-left: 8px solid #b91c1c !important; background: #fff7ed; }
+        .status-em_preparo { border-left: 8px solid #c2410c !important; background: #fff7ed; }
+        .status-pronto { border-left: 8px solid #15803d !important; background: #f0fdf4; }
+        .status-finalizado { border-left: 8px solid #7e22ce !important; background: #faf5ff; }
+        .status-cancelado { border-left: 8px solid #4b5563 !important; background: #f3f4f6; }
 
         /* Upload de imagem */
         .upload-area { border: 2px dashed #fca5a5; transition: all 0.3s; }
@@ -812,7 +810,8 @@
         let currentUser = null;
         
         // Categorias específicas
-        let CATEGORIA_PRINCIPAL_ID = null; // Espetos, PF, etc.
+        let CATEGORIA_PRINCIPAL_ID = null; // Espetos
+        let CATEGORIA_PF_ID = null; // PF
         let CATEGORIA_ACOMPANHAMENTOS_ID = null;
         let CATEGORIA_BEBIDAS_ID = null;
         let CATEGORIA_MOLHOS_ID = null;
@@ -1073,6 +1072,8 @@
                         document.getElementById('edit-imagem-preview').src = uploadImagemUrl;
                     } else if (uploadContexto === 'promocao') {
                         document.getElementById('promo-imagem-preview').src = uploadImagemUrl;
+                    } else if (uploadContexto === 'produto_novo') {
+                        await mostrarPopup('sucesso', 'Imagem enviada!', 'Upload concluído, aguarde a atualização');
                     }
                     
                     await mostrarPopup('sucesso', 'Imagem enviada!', 'Upload concluído com sucesso');
@@ -1099,8 +1100,8 @@
                 const pedidosSnap = await firestore.getDocs(firestore.collection(db, "pedidos"));
                 const todosPedidos = pedidosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                 
-                const pedidosHoje = todosPedidos.filter(p => p.created_at >= inicioHoje);
-                const pedidosFinalizadosHoje = pedidosHoje.filter(p => p.status === 'Finalizado');
+                const pedidosHoje = todosPedidos.filter(p => (p.criadoEm || p.created_at || 0) >= inicioHoje);
+                const pedidosFinalizadosHoje = pedidosHoje.filter(p => p.status === 'finalizado');
                 
                 const totalPedidosHoje = pedidosHoje.length;
                 const totalVendasHoje = pedidosFinalizadosHoje.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
@@ -1108,7 +1109,7 @@
                 let tempoMedio = 32;
                 if (pedidosFinalizadosHoje.length > 0) {
                     const tempos = pedidosFinalizadosHoje.map(p => {
-                        if (p.created_at && p.updated_at) return (p.updated_at - p.created_at) / 60000;
+                        if (p.criadoEm && p.updated_at) return (p.updated_at - p.criadoEm) / 60000;
                         return 32;
                     });
                     tempoMedio = Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length);
@@ -1160,7 +1161,6 @@
             const catBebidas = CATS.find(c => c.nome === "Bebidas");
             const catMolhos = CATS.find(c => c.nome === "Molhos");
             
-            // Para personalização, consideramos tanto Espetos quanto PF como categorias principais
             CATEGORIA_PRINCIPAL_ID = catEspetos ? catEspetos.id : null;
             CATEGORIA_PF_ID = catPF ? catPF.id : null;
             CATEGORIA_ACOMPANHAMENTOS_ID = catAcompanhamentos ? catAcompanhamentos.id : null;
@@ -1343,7 +1343,6 @@
                 
                 await carregarTamanhos();
                 
-                // Identificar categorias específicas
                 identificarCategoriasEspecificas();
                 
                 CATS.sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
@@ -1376,7 +1375,7 @@
                 
                 const q = firestore.query(
                     firestore.collection(db, "pedidos"), 
-                    firestore.orderBy("created_at", "desc"), 
+                    firestore.orderBy("criadoEm", "desc"), 
                     firestore.limit(100)
                 );
                 
@@ -1424,32 +1423,36 @@
                     }
                     
                     const dados = snap.data();
-                    const status = dados.status || 'Novo';
+                    const status = dados.status || 'novo';
                     
-                    document.getElementById('rastreio-status').innerText = status.toUpperCase();
+                    const statusDisplay = {
+                        'novo': 'NOVO',
+                        'em_preparo': 'EM PREPARO',
+                        'pronto': 'PRONTO',
+                        'finalizado': 'FINALIZADO',
+                        'cancelado': 'CANCELADO'
+                    };
                     
-                    let statusClass = "status-Novo";
+                    document.getElementById('rastreio-status').innerText = statusDisplay[status] || status.toUpperCase();
+                    
+                    let statusClass = "status-novo";
                     switch(status) {
-                        case 'Novo': statusClass = "status-Novo"; break;
-                        case 'Preparando': statusClass = "status-Preparando"; break;
-                        case 'Assando': statusClass = "status-Assando"; break;
-                        case 'Pronto': statusClass = "status-Pronto"; break;
-                        case 'Saiu': statusClass = "status-Saiu"; break;
-                        case 'Finalizado': statusClass = "status-Finalizado"; break;
-                        case 'Cancelado': statusClass = "status-Cancelado"; break;
+                        case 'novo': statusClass = "status-novo"; break;
+                        case 'em_preparo': statusClass = "status-em_preparo"; break;
+                        case 'pronto': statusClass = "status-pronto"; break;
+                        case 'finalizado': statusClass = "status-finalizado"; break;
+                        case 'cancelado': statusClass = "status-cancelado"; break;
                     }
                     
                     document.getElementById('box-status-cliente').className = `py-12 px-4 rounded-[40px] border-4 border-double mb-6 transition-all ${statusClass}`;
                     
                     let tempo = "30-40 min";
                     switch(status) {
-                        case 'Novo': tempo = "30-40 min"; break;
-                        case 'Preparando': tempo = "25-35 min"; break;
-                        case 'Assando': tempo = "15-25 min"; break;
-                        case 'Pronto': tempo = "5-15 min"; break;
-                        case 'Saiu': tempo = "A caminho!"; break;
-                        case 'Finalizado': tempo = "Entregue ✓"; break;
-                        case 'Cancelado': tempo = "Cancelado"; break;
+                        case 'novo': tempo = "30-40 min"; break;
+                        case 'em_preparo': tempo = "25-35 min"; break;
+                        case 'pronto': tempo = "5-15 min"; break;
+                        case 'finalizado': tempo = "Entregue ✓"; break;
+                        case 'cancelado': tempo = "Cancelado"; break;
                     }
                     document.getElementById('rastreio-tempo').innerText = `Tempo: ${tempo}`;
                 });
@@ -1468,7 +1471,6 @@
             let html = `<button onclick="renderCardapio('todos')" class="whitespace-nowrap px-3 py-1.5 text-xs font-black uppercase border rounded-full ${curCat === 'todos' ? 'bg-gray-900 text-red-400 border-gray-900' : 'border-orange-200 text-gray-400'}">Todos</button>`;
             
             catsPrincipais.forEach(c => {
-                // Mostrar apenas categorias que não são de montador e têm produtos
                 const temProdutos = PRODS.some(p => p.categoria_id === c.id && p.disponivel !== false);
                 if (temProdutos && c.tipo !== 'montador') {
                     html += `<button onclick="renderCardapio('${c.id}')" class="whitespace-nowrap px-3 py-1.5 text-xs font-black uppercase border rounded-full ${curCat === c.id ? 'bg-gray-900 text-red-400 border-gray-900' : 'border-orange-200 text-gray-400'}">${c.nome}</button>`;
@@ -1544,11 +1546,9 @@
                 return;
             }
             
-            // Verificar categoria da categoria do produto
             const categoriaProduto = CATS.find(c => c.id === p.categoria_id);
             const nomeCategoria = categoriaProduto?.nome || '';
             
-            // Só abrir personalização para PF ou Espetos
             if (nomeCategoria === "PF" || nomeCategoria === "Espetos") {
                 itemPersonalizacaoAtual = { 
                     ...p, 
@@ -1558,7 +1558,6 @@
                 };
                 abrirPersonalizacao();
             } else {
-                // Para outros produtos, adicionar direto ao carrinho
                 CARRINHO.push({
                     id: p.id,
                     nome: p.nome,
@@ -1578,10 +1577,8 @@
             document.getElementById('personalizacao-titulo').textContent = 
                 `Personalizar ${itemPersonalizacaoAtual.nome} (${itemPersonalizacaoAtual.categoria_nome})`;
             
-            // Resetar seleções
             personalizacaoSelecionada = [];
             
-            // Carregar acompanhamentos com listener em tempo real
             carregarAcompanhamentosDoCardapioComListener();
             
             document.getElementById('modal-personalizacao').classList.remove('hidden');
@@ -1596,7 +1593,6 @@
                 return;
             }
             
-            // Remover listener anterior se existir
             if (acompanhamentosListenerUnsubscribe) {
                 acompanhamentosListenerUnsubscribe();
             }
@@ -1604,21 +1600,18 @@
             try {
                 const { db, firestore } = getFirebaseRefs();
                 
-                // Criar query para buscar apenas acompanhamentos disponíveis
                 const q = firestore.query(
                     firestore.collection(db, "produtos"),
                     firestore.where("categoria_id", "==", CATEGORIA_ACOMPANHAMENTOS_ID),
                     firestore.where("disponivel", "==", true)
                 );
                 
-                // Usar onSnapshot para atualização em tempo real
                 acompanhamentosListenerUnsubscribe = firestore.onSnapshot(q, (snapshot) => {
                     const acompanhamentos = snapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data()
                     }));
                     
-                    // Organizar por grupos
                     const grupos = {
                         ARROZ: [],
                         FAROFA: [],
@@ -1657,7 +1650,6 @@
             
             let html = '';
             
-            // Função para renderizar cada grupo
             Object.entries(grupos).forEach(([nomeGrupo, items]) => {
                 if (items.length === 0) return;
                 
@@ -1672,7 +1664,6 @@
                     const groupId = `grupo-${nomeGrupo}-${acomp.id}`;
                     const radioName = `grupo-${nomeGrupo}`;
                     
-                    // Verificar se este item está selecionado
                     const isSelected = personalizacaoSelecionada.some(s => s.id === acomp.id);
                     
                     html += `
@@ -1704,7 +1695,6 @@
             
             container.innerHTML = html;
             
-            // Se houver seleções prévias, garantir que os radios corretos estejam marcados
             if (personalizacaoSelecionada.length > 0) {
                 personalizacaoSelecionada.forEach(selecao => {
                     const radio = document.querySelector(`input[value="${selecao.id}"]`);
@@ -1725,10 +1715,8 @@
             const nome = radio.dataset.nome;
             const grupo = radio.dataset.grupo;
             
-            // Remover seleção anterior do mesmo grupo
             personalizacaoSelecionada = personalizacaoSelecionada.filter(item => item.grupo !== grupo);
             
-            // Adicionar nova seleção
             personalizacaoSelecionada.push({
                 id,
                 nome,
@@ -1742,7 +1730,6 @@
         function selecionarTodosAcompanhamentos() {
             if (!CATEGORIA_ACOMPANHAMENTOS_ID) return;
             
-            // Agrupar radios por grupo
             const grupos = {};
             document.querySelectorAll('input[type="radio"]').forEach(radio => {
                 const grupo = radio.dataset.grupo;
@@ -1752,13 +1739,11 @@
                 grupos[grupo].push(radio);
             });
             
-            // Selecionar primeiro de cada grupo
             Object.values(grupos).forEach(radios => {
                 if (radios.length > 0) {
                     const primeiro = radios[0];
                     primeiro.checked = true;
                     
-                    // Disparar evento de seleção
                     selecionarAcompanhamentoGrupo(primeiro);
                 }
             });
@@ -1819,7 +1804,6 @@
             document.getElementById('modal-personalizacao').classList.add('hidden');
             itemPersonalizacaoAtual = null;
             
-            // Limpar listener de acompanhamentos
             if (acompanhamentosListenerUnsubscribe) {
                 acompanhamentosListenerUnsubscribe();
                 acompanhamentosListenerUnsubscribe = null;
@@ -1835,7 +1819,6 @@
                 return;
             }
             
-            // Buscar apenas bebidas com filtro correto
             const bebidas = PRODS.filter(p => 
                 p.categoria_id === CATEGORIA_BEBIDAS_ID && 
                 p.disponivel !== false
@@ -1885,7 +1868,6 @@
 
         // ==================== CARRINHO ====================
         async function addCart(id) {
-            // Redirecionar para a função de personalização
             selecionarProdutoParaPersonalizacao(id);
         }
 
@@ -1896,7 +1878,6 @@
                 updateCartFooter();
                 renderCarrinhoModal();
                 
-                // Atualizar checkout se estiver aberto
                 if (!document.getElementById('modal-checkout').classList.contains('hidden')) {
                     renderCheckoutItens();
                     atualizarTotalCheckout();
@@ -2237,7 +2218,6 @@
 
         function calcularTotalCarrinho() {
             return CARRINHO.reduce((total, item) => {
-                // Usar total_item se existir, senão usar preco (para compatibilidade)
                 return total + (item.total_item || item.preco || 0);
             }, 0);
         }
@@ -2274,7 +2254,6 @@
             const totalFinal = totalItens + tFRETE - vCUPOM;
             document.getElementById('res-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.',',')}`;
             
-            // Bloquear finalizar se total for zero
             const btnFinal = document.getElementById('btn-final-zap');
             if (totalItens <= 0) {
                 btnFinal.disabled = true;
@@ -2374,7 +2353,11 @@
         async function enviarPedido() {
             const totalCarrinho = calcularTotalCarrinho();
             
-            // Verificar se total é zero
+            if (CARRINHO.length === 0) {
+                await mostrarPopup('aviso', 'Carrinho vazio', 'Adicione itens ao carrinho');
+                return;
+            }
+            
             if (totalCarrinho <= 0) {
                 await mostrarPopup('erro', 'Carrinho vazio', 'Adicione itens ao carrinho');
                 return;
@@ -2407,7 +2390,22 @@
                 }
             }
             
-            const ag = CARRINHO.reduce((acc, i) => { acc[i.nome] = (acc[i.nome] || 0) + 1; return acc; }, {});
+            const ag = {};
+            const itensDetalhados = [];
+            
+            CARRINHO.forEach(item => {
+                ag[item.nome] = (ag[item.nome] || 0) + 1;
+                
+                let descricaoItem = item.nome;
+                if (item.acompanhamentos && item.acompanhamentos.length > 0) {
+                    descricaoItem += `\n   Acompanhamentos: ${item.acompanhamentos.map(a => a.nome).join(', ')}`;
+                }
+                if (item.descricao && item.descricao !== descricaoItem) {
+                    descricaoItem += `\n   Obs: ${item.descricao}`;
+                }
+                itensDetalhados.push(descricaoItem);
+            });
+            
             const totalFinal = totalCarrinho + tFRETE - vCUPOM;
             const pagamento = document.getElementById('f-pag').value;
             
@@ -2419,12 +2417,13 @@
                 bairro: document.getElementById('f-bairro').value || "",
                 complemento: document.getElementById('f-comp').value || "",
                 total: totalFinal,
-                status: 'Novo',
-                created_at: Date.now(),
+                status: 'novo',
+                criadoEm: Date.now(),
                 pagamento,
                 troco: document.getElementById('f-troco').value || "Não",
                 itens: Object.keys(ag),
                 itens_quantidade: ag,
+                itens_detalhados: itensDetalhados,
                 taxa_entrega: tFRETE,
                 lat_cli: latCli,
                 lng_cli: lngCli,
@@ -2440,27 +2439,12 @@
                 
                 const docRef = await firestore.addDoc(firestore.collection(db, "pedidos"), pedido);
                 
-                let itensTxt = '';
-                for (const [nome, qtd] of Object.entries(ag)) itensTxt += `• ${qtd}x *${nome}*\n`;
+                const numero = CONFIG.whatsapp ? CONFIG.whatsapp.replace(/\D/g, '') : "5599999999999";
+                const numeroCompleto = numero.startsWith('55') ? numero : `55${numero}`;
                 
-                const url = `${location.origin}${location.pathname}?pedido=${docRef.id}`;
-                const maps = modoConsumo === 'delivery' ? `\n📍 *Mapa:* https://www.google.com/maps?q=${latCli},${lngCli}` : '';
-                
-                const msg = `*🥩 NOVO PEDIDO - ${CONFIG.nome_churrascaria || 'Churrasco'}*\n` +
-                    `════════════════════\n` +
-                    `*Cliente:* ${nome}\n` +
-                    `*WhatsApp:* ${whatsapp}\n` +
-                    `*Modo:* ${modoConsumo.toUpperCase()}\n` +
-                    (modoConsumo === 'delivery' ? `*Endereço:* ${pedido.rua}, ${pedido.numero} - ${pedido.bairro}\n` : '') +
-                    (pedido.complemento ? `*Complemento:* ${pedido.complemento}\n` : '') +
-                    `════════════════════\n` +
-                    `*ITENS:*\n${itensTxt}\n` +
-                    `════════════════════\n` +
-                    `*Taxa:* R$ ${tFRETE.toFixed(2)}\n` +
-                    `*Desconto:* R$ ${vCUPOM.toFixed(2)}\n` +
-                    `*TOTAL:* R$ ${totalFinal.toFixed(2).replace('.',',')}${maps}\n\n` +
-                    `*Pagamento:* ${pagamento}\n\n` +
-                    `🛰️ *Acompanhe:* ${url}`;
+                const mensagem = montarResumoPedidoWhatsApp(pedido, docRef.id, itensDetalhados, totalCarrinho);
+                const mensagemCodificada = encodeURIComponent(mensagem);
+                const urlWhatsApp = `https://wa.me/${numeroCompleto}?text=${mensagemCodificada}`;
                 
                 localStorage.setItem('churrasco_memoria', JSON.stringify({
                     nome, zap: whatsapp,
@@ -2478,8 +2462,8 @@
                 await mostrarPopup('sucesso', 'Pedido enviado!', 'Você será redirecionado para o WhatsApp');
                 
                 setTimeout(() => {
-                    window.open(`https://api.whatsapp.com/send?phone=${(CONFIG.whatsapp || '5599999999999').replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`, '_blank');
-                    window.location.href = url;
+                    window.open(urlWhatsApp, '_blank');
+                    window.location.href = `${location.origin}${location.pathname}?pedido=${docRef.id}`;
                 }, 500);
                 
             } catch (error) {
@@ -2488,6 +2472,50 @@
                 document.getElementById('btn-final-zap').innerHTML = "🚀 FINALIZAR PEDIDO";
                 document.getElementById('btn-final-zap').disabled = false;
             }
+        }
+
+        function montarResumoPedidoWhatsApp(pedido, pedidoId, itensDetalhados, subtotal) {
+            let mensagem = `*🥩 ${CONFIG.nome_churrascaria || 'CHURRASCO PRIME'}*\n`;
+            mensagem += `════════════════════\n`;
+            mensagem += `*Pedido:* #${pedidoId.slice(-6)}\n`;
+            mensagem += `*Cliente:* ${pedido.cliente_nome}\n`;
+            mensagem += `*WhatsApp:* ${pedido.cliente_whatsapp}\n`;
+            mensagem += `*Modo:* ${pedido.modo_consumo?.toUpperCase() || 'DELIVERY'}\n`;
+            
+            if (pedido.modo_consumo === 'delivery') {
+                mensagem += `*Endereço:* ${pedido.rua}, ${pedido.numero}`;
+                if (pedido.bairro) mensagem += ` - ${pedido.bairro}`;
+                mensagem += `\n`;
+                if (pedido.complemento) mensagem += `*Complemento:* ${pedido.complemento}\n`;
+            }
+            
+            mensagem += `════════════════════\n`;
+            mensagem += `*ITENS:*\n`;
+            
+            itensDetalhados.forEach(item => {
+                mensagem += `• ${item}\n`;
+            });
+            
+            mensagem += `════════════════════\n`;
+            mensagem += `*Subtotal:* R$ ${subtotal.toFixed(2)}\n`;
+            
+            if (pedido.taxa_entrega > 0) {
+                mensagem += `*Taxa entrega:* R$ ${pedido.taxa_entrega.toFixed(2)}\n`;
+            }
+            if (pedido.desconto > 0) {
+                mensagem += `*Desconto:* -R$ ${pedido.desconto.toFixed(2)}\n`;
+            }
+            
+            mensagem += `*TOTAL:* R$ ${pedido.total.toFixed(2)}\n`;
+            mensagem += `*Pagamento:* ${pedido.pagamento}\n`;
+            if (pedido.troco && pedido.troco !== "Não" && pedido.troco !== "0") {
+                mensagem += `*Troco para:* R$ ${pedido.troco}\n`;
+            }
+            
+            mensagem += `════════════════════\n`;
+            mensagem += `🛰️ *Acompanhe:* ${location.origin}${location.pathname}?pedido=${pedidoId}`;
+            
+            return mensagem;
         }
 
         // ==================== ADMIN ====================
@@ -2556,13 +2584,11 @@
         }
 
         function switchTab(tab) {
-            // Atualizar abas
             document.querySelectorAll('.admin-tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.getElementById(`tab-${tab}`).classList.add('active');
             
-            // Dashboard especial (sempre visível, mas podemos esconder se não for a aba ativa)
             const dashboardSection = document.getElementById('dashboard-section');
             if (tab === 'dashboard') {
                 dashboardSection.style.display = 'block';
@@ -2570,19 +2596,16 @@
                 dashboardSection.style.display = 'none';
             }
             
-            // Esconder todas as seções de conteúdo
             ['pedidos', 'produtos', 'categorias', 'cupons', 'config', 'promocoes', 'tamanhos'].forEach(t => {
                 const sec = document.getElementById(`sec-${t}`);
                 if (sec) sec.classList.add('hidden');
             });
             
-            // Mostrar a seção selecionada
             if (tab !== 'dashboard') {
                 const sec = document.getElementById(`sec-${tab}`);
                 if (sec) {
                     sec.classList.remove('hidden');
                     
-                    // Carregar dados específicos
                     if (tab === 'produtos') renderProdutosADM();
                     else if (tab === 'categorias') renderCategoriasADM();
                     else if (tab === 'cupons') renderCuponsADM();
@@ -2590,7 +2613,6 @@
                     else if (tab === 'promocoes') renderPromocoesADM();
                     else if (tab === 'tamanhos') renderTamanhosADM();
                     else if (tab === 'pedidos') {
-                        // Recarregar pedidos
                         const { db, firestore } = getFirebaseRefs();
                         firestore.getDocs(firestore.collection(db, "pedidos")).then(snap => {
                             const pedidos = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -2601,15 +2623,32 @@
             }
         }
 
+        // ==================== ADMIN - PEDIDOS (CORRIGIDO) ====================
         function renderPedidosADM(pedidos) {
             const sec = document.getElementById('sec-pedidos');
             if (!sec) return;
             
+            const statusAtivos = ['novo', 'em_preparo', 'pronto'];
+            const statusFinalizados = ['finalizado', 'cancelado'];
+            
+            const pedidosAtivos = pedidos.filter(p => statusAtivos.includes(p.status || 'novo'));
+            const pedidosFinalizados = pedidos.filter(p => statusFinalizados.includes(p.status || ''));
+            
+            const ordenarPorData = (a, b) => {
+                const dataA = a.criadoEm || a.created_at || 0;
+                const dataB = b.criadoEm || b.created_at || 0;
+                return dataB - dataA;
+            };
+            
+            pedidosAtivos.sort(ordenarPorData);
+            pedidosFinalizados.sort(ordenarPorData);
+            
             const hoje = new Date();
             const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
-            
-            const pedidosHoje = pedidos.filter(p => p.created_at >= inicioHoje);
-            const totalDia = pedidosHoje.filter(p => p.status === 'Finalizado').reduce((a, p) => a + (parseFloat(p.total) || 0), 0);
+            const pedidosHoje = pedidos.filter(p => (p.criadoEm || p.created_at || 0) >= inicioHoje);
+            const totalDia = pedidosHoje
+                .filter(p => p.status === 'finalizado')
+                .reduce((a, p) => a + (parseFloat(p.total) || 0), 0);
             
             let html = `
                 <div class="bg-gray-900 text-white p-3 rounded-xl mb-3">
@@ -2624,24 +2663,66 @@
                         </div>
                     </div>
                 </div>
-                <div id="lista-peds" class="space-y-2"></div>`;
+            `;
+            
+            html += `
+                <div class="mb-4">
+                    <h3 class="font-bebas text-lg text-red-600 mb-2 flex items-center gap-2">
+                        <i class="fas fa-fire"></i> PEDIDOS ATIVOS (${pedidosAtivos.length})
+                    </h3>
+                    <div id="lista-pedidos-ativos" class="space-y-2"></div>
+                </div>
+            `;
+            
+            html += `
+                <div class="mb-4">
+                    <h3 class="font-bebas text-lg text-gray-600 mb-2 flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i> FINALIZADOS / CANCELADOS (${pedidosFinalizados.length})
+                    </h3>
+                    <div id="lista-pedidos-finalizados" class="space-y-2 opacity-70"></div>
+                </div>
+            `;
+            
             sec.innerHTML = html;
             
-            const lista = document.getElementById('lista-peds');
-            if (pedidos.length === 0) {
-                lista.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-sm">Nenhum pedido</div>';
-                return;
+            const listaAtivos = document.getElementById('lista-pedidos-ativos');
+            if (pedidosAtivos.length === 0) {
+                listaAtivos.innerHTML = '<div class="bg-white p-4 rounded-xl text-center text-sm text-gray-400">Nenhum pedido ativo</div>';
+            } else {
+                listaAtivos.innerHTML = pedidosAtivos.map(p => renderPedidoCard(p)).join('');
             }
             
-            lista.innerHTML = pedidos.map(p => {
-                const data = p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : '--';
-                const itens = p.itens_quantidade ? Object.entries(p.itens_quantidade).map(([n, q]) => `${q}x ${n}`).join(', ') : '--';
-                
-                return `
-                <div class="bg-white p-3 rounded-xl shadow-sm border-l-[8px] status-${(p.status || 'Novo').replace(' ', '')}" id="pedido-${p.id}">
+            const listaFinalizados = document.getElementById('lista-pedidos-finalizados');
+            if (pedidosFinalizados.length === 0) {
+                listaFinalizados.innerHTML = '<div class="bg-white p-4 rounded-xl text-center text-sm text-gray-400">Nenhum pedido finalizado</div>';
+            } else {
+                listaFinalizados.innerHTML = pedidosFinalizados.map(p => renderPedidoCard(p, true)).join('');
+            }
+        }
+
+        function renderPedidoCard(p, isFinalizado = false) {
+            const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : 
+                         p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : '--';
+            
+            const itens = p.itens_quantidade ? 
+                Object.entries(p.itens_quantidade).map(([n, q]) => `${q}x ${n}`).join(', ') : 
+                (p.itens ? p.itens.join(', ') : '--');
+            
+            const statusDisplay = {
+                'novo': 'NOVO',
+                'em_preparo': 'EM PREPARO',
+                'pronto': 'PRONTO',
+                'finalizado': 'FINALIZADO',
+                'cancelado': 'CANCELADO'
+            };
+            
+            const statusTexto = statusDisplay[p.status] || (p.status || 'NOVO').toUpperCase();
+            
+            return `
+                <div class="bg-white p-3 rounded-xl shadow-sm border-l-[8px] status-${(p.status || 'novo').replace('_', '')}" id="pedido-${p.id}">
                     <div class="flex justify-between text-xs font-black mb-1">
                         <span>${p.cliente_nome || '--'}</span>
-                        <span class="bg-gray-900 text-red-400 px-2 py-0.5 rounded-full text-[9px]">${p.status || 'Novo'}</span>
+                        <span class="bg-gray-900 text-red-400 px-2 py-0.5 rounded-full text-[9px]">${statusTexto}</span>
                     </div>
                     <div class="text-[9px] text-gray-500 mb-1">${data}</div>
                     <div class="text-[9px] font-bold border-y py-1.5 my-1 text-gray-600">${itens}</div>
@@ -2650,62 +2731,201 @@
                         <div class="flex gap-1">
                             <button onclick="imprimirPedido('${p.id}')" class="bg-gray-100 p-1.5 rounded-lg"><i class="fas fa-print text-[10px]"></i></button>
                             ${p.cliente_whatsapp ? `<button onclick="notificarCliente('${p.id}')" class="bg-green-50 text-green-600 p-1.5 rounded-lg"><i class="fab fa-whatsapp text-[10px]"></i></button>` : ''}
-                            <select onchange="updateStatus('${p.id}', this.value)" class="text-[9px] bg-gray-900 text-red-400 p-1.5 rounded-lg">
-                                <option value="">Status</option>
-                                <option value="Novo" ${p.status === 'Novo' ? 'selected' : ''}>Novo</option>
-                                <option value="Preparando" ${p.status === 'Preparando' ? 'selected' : ''}>Preparando</option>
-                                <option value="Assando" ${p.status === 'Assando' ? 'selected' : ''}>Assando</option>
-                                <option value="Pronto" ${p.status === 'Pronto' ? 'selected' : ''}>Pronto</option>
-                                <option value="Saiu" ${p.status === 'Saiu' ? 'selected' : ''}>Saiu</option>
-                                <option value="Finalizado" ${p.status === 'Finalizado' ? 'selected' : ''}>Finalizado</option>
-                                <option value="Cancelado" ${p.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
-                            </select>
+                            ${!isFinalizado ? `
+                                <select onchange="updateStatus('${p.id}', this.value)" class="text-[9px] bg-gray-900 text-red-400 p-1.5 rounded-lg">
+                                    <option value="">Status</option>
+                                    <option value="novo" ${p.status === 'novo' ? 'selected' : ''}>Novo</option>
+                                    <option value="em_preparo" ${p.status === 'em_preparo' ? 'selected' : ''}>Em Preparo</option>
+                                    <option value="pronto" ${p.status === 'pronto' ? 'selected' : ''}>Pronto</option>
+                                    <option value="finalizado" ${p.status === 'finalizado' ? 'selected' : ''}>Finalizado</option>
+                                    <option value="cancelado" ${p.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                                </select>
+                            ` : ''}
                             <button onclick="apagarPedido('${p.id}')" class="bg-red-50 text-red-500 p-1.5 rounded-lg"><i class="fas fa-trash text-[10px]"></i></button>
                         </div>
                     </div>
-                </div>`;
-            }).join('');
+                </div>
+            `;
         }
 
+        // ==================== ADMIN - IMPRESSÃO (CORRIGIDA) ====================
         async function imprimirPedido(id) {
             try {
                 const { db, firestore } = getFirebaseRefs();
                 const snap = await firestore.getDoc(firestore.doc(db, "pedidos", id));
-                if (!snap.exists()) return;
+                if (!snap.exists()) {
+                    await mostrarPopup('erro', 'Pedido não encontrado', 'ID inválido');
+                    return;
+                }
                 
                 const p = snap.data();
-                let html = `<div style="font-family: monospace; padding: 10px; max-width: 80mm;">
-                    <h2 style="text-align: center;">${CONFIG.nome_churrascaria}</h2>
-                    <p style="text-align: center;">Pedido #${id.slice(-6)}</p>
-                    <p style="text-align: center;">${new Date(p.created_at).toLocaleString('pt-BR')}</p>
-                    <hr>
-                    <p><strong>Cliente:</strong> ${p.cliente_nome}</p>
-                    <p><strong>WhatsApp:</strong> ${p.cliente_whatsapp}</p>`;
-                    
-                if (p.modo_consumo === 'delivery') {
-                    html += `<p><strong>Endereço:</strong> ${p.rua}, ${p.numero} - ${p.bairro}</p>`;
+                
+                const janela = window.open('', '_blank', 'width=400,height=600,menubar=no,toolbar=no,location=no');
+                
+                if (!janela) {
+                    await mostrarPopup('erro', 'Pop-up bloqueado', 'Permita pop-ups para imprimir');
+                    return;
                 }
                 
-                html += `<hr><table style="width:100%">`;
-                if (p.itens_quantidade) {
-                    Object.entries(p.itens_quantidade).forEach(([nome, qtd]) => {
-                        html += `<tr><td>${nome}</td><td style="text-align:right">${qtd}</td></tr>`;
-                    });
-                }
-                html += `</table><hr>
-                    <p><strong>Total:</strong> R$ ${(parseFloat(p.total) || 0).toFixed(2).replace('.',',')}</p>
-                    <p><strong>Pagamento:</strong> ${p.pagamento}</p>
-                </div>`;
+                const htmlConteudo = gerarHTMLPedido(p, id);
                 
-                document.getElementById('secao-impressao').innerHTML = html;
-                document.getElementById('secao-impressao').classList.remove('hidden');
+                janela.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Pedido #${id.slice(-6)}</title>
+                        <style>
+                            body { 
+                                font-family: 'Courier New', monospace; 
+                                font-size: 12px; 
+                                line-height: 1.4;
+                                margin: 0;
+                                padding: 10px;
+                                max-width: 80mm;
+                            }
+                            h1 { 
+                                text-align: center; 
+                                font-size: 16px; 
+                                margin: 5px 0;
+                                font-weight: bold;
+                            }
+                            h2 { 
+                                text-align: center; 
+                                font-size: 14px; 
+                                margin: 5px 0;
+                                border-top: 1px dashed #000;
+                                border-bottom: 1px dashed #000;
+                                padding: 5px 0;
+                            }
+                            .info { margin: 5px 0; }
+                            .info p { margin: 2px 0; }
+                            .itens { margin: 10px 0; }
+                            .item { 
+                                display: flex; 
+                                justify-content: space-between;
+                                margin: 3px 0;
+                            }
+                            .item-nome { flex: 1; }
+                            .item-qtd { margin-left: 10px; }
+                            .total { 
+                                font-weight: bold; 
+                                font-size: 14px;
+                                border-top: 2px solid #000;
+                                margin-top: 10px;
+                                padding-top: 5px;
+                                text-align: right;
+                            }
+                            .footer {
+                                margin-top: 20px;
+                                text-align: center;
+                                font-size: 10px;
+                                border-top: 1px dashed #000;
+                                padding-top: 5px;
+                            }
+                            hr {
+                                border: none;
+                                border-top: 1px dashed #000;
+                                margin: 8px 0;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${htmlConteudo}
+                        <div class="footer">
+                            Obrigado pela preferência!<br>
+                            ${new Date().toLocaleString('pt-BR')}
+                        </div>
+                    </body>
+                    </html>
+                `);
+                
+                janela.document.close();
+                janela.focus();
+                
                 setTimeout(() => {
-                    window.print();
-                    document.getElementById('secao-impressao').classList.add('hidden');
-                }, 200);
+                    janela.print();
+                }, 500);
+                
             } catch (error) {
                 console.error("Erro imprimir:", error);
+                await mostrarPopup('erro', 'Erro ao imprimir', error.message);
             }
+        }
+
+        function gerarHTMLPedido(p, id) {
+            const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : 
+                         p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : 
+                         new Date().toLocaleString('pt-BR');
+            
+            let html = `
+                <h1>${CONFIG.nome_churrascaria || 'CHURRASCO PRIME'}</h1>
+                <h2>PEDIDO #${id.slice(-6)}</h2>
+                
+                <div class="info">
+                    <p><strong>Data:</strong> ${data}</p>
+                    <p><strong>Cliente:</strong> ${p.cliente_nome || '---'}</p>
+                    <p><strong>WhatsApp:</strong> ${p.cliente_whatsapp || '---'}</p>
+                    <p><strong>Modo:</strong> ${(p.modo_consumo || 'delivery').toUpperCase()}</p>
+            `;
+            
+            if (p.modo_consumo === 'delivery') {
+                html += `
+                    <p><strong>Endereço:</strong> ${p.rua || ''}, ${p.numero || 'S/N'}</p>
+                    ${p.bairro ? `<p><strong>Bairro:</strong> ${p.bairro}</p>` : ''}
+                    ${p.complemento ? `<p><strong>Complemento:</strong> ${p.complemento}</p>` : ''}
+                `;
+            }
+            
+            html += `</div><hr>`;
+            
+            html += `<div class="itens"><strong>ITENS:</strong>`;
+            
+            if (p.itens_quantidade) {
+                Object.entries(p.itens_quantidade).forEach(([nome, qtd]) => {
+                    html += `
+                        <div class="item">
+                            <span class="item-nome">${nome}</span>
+                            <span class="item-qtd">${qtd}x</span>
+                        </div>
+                    `;
+                });
+            } else if (p.itens && Array.isArray(p.itens)) {
+                p.itens.forEach(nome => {
+                    html += `
+                        <div class="item">
+                            <span class="item-nome">${nome}</span>
+                            <span class="item-qtd">1x</span>
+                        </div>
+                    `;
+                });
+            } else {
+                html += `<p>---</p>`;
+            }
+            
+            html += `</div><hr>`;
+            
+            const total = parseFloat(p.total) || 0;
+            const taxa = parseFloat(p.taxa_entrega) || 0;
+            const desconto = parseFloat(p.desconto) || 0;
+            const subtotal = total - taxa + desconto;
+            
+            html += `
+                <div class="info">
+                    <p><strong>Subtotal:</strong> R$ ${subtotal.toFixed(2).replace('.',',')}</p>
+                    ${taxa > 0 ? `<p><strong>Taxa entrega:</strong> R$ ${taxa.toFixed(2).replace('.',',')}</p>` : ''}
+                    ${desconto > 0 ? `<p><strong>Desconto:</strong> -R$ ${desconto.toFixed(2).replace('.',',')}</p>` : ''}
+                    <div class="total">TOTAL: R$ ${total.toFixed(2).replace('.',',')}</div>
+                </div>
+                
+                <div class="info">
+                    <p><strong>Pagamento:</strong> ${p.pagamento || '---'}</p>
+                    ${p.troco && p.troco !== "Não" && p.troco !== "0" ? `<p><strong>Troco para:</strong> R$ ${p.troco}</p>` : ''}
+                    <p><strong>Status:</strong> ${(p.status || 'novo').toUpperCase()}</p>
+                </div>
+            `;
+            
+            return html;
         }
 
         async function notificarCliente(id) {
@@ -2718,7 +2938,7 @@
                 if (!p.cliente_whatsapp) return;
                 
                 const url = `${location.origin}${location.pathname}?pedido=${id}`;
-                const msg = `*🥩 ATUALIZAÇÃO*\n\nOlá ${p.cliente_nome}! Seu pedido está: *${p.status || 'Novo'}*\n\nAcompanhe: ${url}`;
+                const msg = `*🥩 ATUALIZAÇÃO*\n\nOlá ${p.cliente_nome}! Seu pedido está: *${(p.status || 'novo').toUpperCase()}*\n\nAcompanhe: ${url}`;
                 
                 window.open(`https://api.whatsapp.com/send?phone=${p.cliente_whatsapp}&text=${encodeURIComponent(msg)}`, '_blank');
             } catch (error) {
@@ -2731,13 +2951,25 @@
             
             try {
                 const { db, firestore } = getFirebaseRefs();
-                await firestore.updateDoc(firestore.doc(db, "pedidos", id), { status: novo, updated_at: Date.now() });
+                await firestore.updateDoc(firestore.doc(db, "pedidos", id), { 
+                    status: novo, 
+                    updated_at: Date.now() 
+                });
                 
                 const el = document.getElementById(`pedido-${id}`);
                 if (el) {
-                    el.className = el.className.replace(/status-\w+/g, '') + ` status-${novo.replace(' ', '')}`;
+                    el.className = el.className.replace(/status-\w+/g, '') + ` status-${novo.replace('_', '')}`;
                     const badge = el.querySelector('.bg-gray-900');
-                    if (badge) badge.textContent = novo;
+                    if (badge) {
+                        const statusDisplay = {
+                            'novo': 'NOVO',
+                            'em_preparo': 'EM PREPARO',
+                            'pronto': 'PRONTO',
+                            'finalizado': 'FINALIZADO',
+                            'cancelado': 'CANCELADO'
+                        };
+                        badge.textContent = statusDisplay[novo] || novo.toUpperCase();
+                    }
                 }
                 
                 enviarNotificacao("Status atualizado", `Pedido #${id.slice(-6)}: ${novo}`);
@@ -2765,7 +2997,7 @@
             }
         }
 
-        // ==================== ADMIN - PRODUTOS ====================
+        // ==================== ADMIN - PRODUTOS (COM LINK DE IMAGEM) ====================
         async function renderProdutosADM() {
             const sec = document.getElementById('sec-produtos');
             if (!sec) return;
@@ -2813,14 +3045,73 @@
         async function novoProduto() {
             try {
                 const { db, firestore } = getFirebaseRefs();
+                
+                const { value: imagemOption } = await Swal.fire({
+                    title: 'Adicionar imagem?',
+                    text: 'Escolha como deseja adicionar a imagem',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#b91c1c',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Link da Internet',
+                    cancelButtonText: 'Sem imagem',
+                    showDenyButton: true,
+                    denyButtonText: 'Upload',
+                    denyButtonColor: '#2563eb'
+                });
+
+                let imagemUrl = '';
+                
+                if (imagemOption === true) {
+                    const { value: url } = await Swal.fire({
+                        title: 'Link da imagem',
+                        input: 'url',
+                        inputLabel: 'Cole a URL da imagem',
+                        inputPlaceholder: 'https://exemplo.com/imagem.jpg',
+                        showCancelButton: true,
+                        confirmButtonColor: '#b91c1c'
+                    });
+                    if (url) {
+                        imagemUrl = url;
+                    }
+                } else if (imagemOption === false) {
+                    uploadContexto = 'produto_novo';
+                    uploadId = null;
+                    document.getElementById('modal-upload').classList.remove('hidden');
+                    
+                    const docRef = await firestore.addDoc(firestore.collection(db, "produtos"), {
+                        nome: "Novo Produto",
+                        descricao: "Descrição",
+                        preco: 0,
+                        categoria_id: CATS[0]?.id || "",
+                        imagem_url: "",
+                        disponivel: true
+                    });
+                    
+                    setTimeout(async () => {
+                        if (uploadImagemUrl) {
+                            await firestore.updateDoc(firestore.doc(db, "produtos", docRef.id), {
+                                imagem_url: uploadImagemUrl
+                            });
+                            uploadImagemUrl = '';
+                        }
+                        renderProdutosADM();
+                    }, 2000);
+                    
+                    await mostrarPopup('sucesso', 'Produto criado', 'Adicione as informações e aguarde o upload');
+                    renderProdutosADM();
+                    return;
+                }
+                
                 await firestore.addDoc(firestore.collection(db, "produtos"), {
                     nome: "Novo Produto",
                     descricao: "Descrição",
                     preco: 0,
                     categoria_id: CATS[0]?.id || "",
-                    imagem_url: "",
+                    imagem_url: imagemUrl,
                     disponivel: true
                 });
+                
                 await mostrarPopup('sucesso', 'Produto criado', 'Adicione as informações');
                 renderProdutosADM();
             } catch (error) {
@@ -2849,12 +3140,66 @@
             try {
                 const { db, firestore } = getFirebaseRefs();
                 const id = document.getElementById('edit-id-hidden').value;
+                
+                const { value: imagemOption } = await Swal.fire({
+                    title: 'Imagem do produto',
+                    text: 'Deseja alterar a imagem?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#b91c1c',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Link da Internet',
+                    cancelButtonText: 'Manter atual',
+                    showDenyButton: true,
+                    denyButtonText: 'Upload',
+                    denyButtonColor: '#2563eb'
+                });
+
+                let imagemUrl = document.getElementById('edit-imagem-preview').src;
+                
+                if (imagemOption === true) {
+                    const { value: url } = await Swal.fire({
+                        title: 'Link da imagem',
+                        input: 'url',
+                        inputLabel: 'Cole a URL da imagem',
+                        inputPlaceholder: 'https://exemplo.com/imagem.jpg',
+                        showCancelButton: true,
+                        confirmButtonColor: '#b91c1c',
+                        inputValue: imagemUrl !== 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png' ? imagemUrl : ''
+                    });
+                    if (url) {
+                        imagemUrl = url;
+                        document.getElementById('edit-imagem-preview').src = url;
+                    }
+                } else if (imagemOption === false) {
+                    uploadContexto = 'produto';
+                    uploadId = id;
+                    document.getElementById('modal-upload').classList.remove('hidden');
+                    
+                    setTimeout(async () => {
+                        if (uploadImagemUrl) {
+                            await firestore.updateDoc(firestore.doc(db, "produtos", id), {
+                                nome: document.getElementById('edit-n').value,
+                                descricao: document.getElementById('edit-d').value,
+                                preco: parseFloat(document.getElementById('edit-p').value) || 0,
+                                categoria_id: document.getElementById('edit-c').value,
+                                imagem_url: uploadImagemUrl
+                            });
+                            uploadImagemUrl = '';
+                            fecharModalEditar();
+                            renderProdutosADM();
+                            await mostrarPopup('sucesso', 'Produto atualizado', 'Alterações salvas com upload');
+                        }
+                    }, 1000);
+                    return;
+                }
+                
                 await firestore.updateDoc(firestore.doc(db, "produtos", id), {
                     nome: document.getElementById('edit-n').value,
                     descricao: document.getElementById('edit-d').value,
                     preco: parseFloat(document.getElementById('edit-p').value) || 0,
                     categoria_id: document.getElementById('edit-c').value,
-                    imagem_url: document.getElementById('edit-imagem-preview').src
+                    imagem_url: imagemUrl
                 });
                 
                 fecharModalEditar();
@@ -3592,23 +3937,19 @@
         window.uploadImagem = previewImagem;
         window.confirmarUpload = confirmarUpload;
         
-        // Novas funções de personalização
         window.selecionarProdutoParaPersonalizacao = selecionarProdutoParaPersonalizacao;
         window.selecionarAcompanhamentoGrupo = selecionarAcompanhamentoGrupo;
         window.selecionarTodosAcompanhamentos = selecionarTodosAcompanhamentos;
         window.adicionarPersonalizadoAoCarrinho = adicionarPersonalizadoAoCarrinho;
         window.fecharPersonalizacao = fecharPersonalizacao;
         
-        // Novas funções de sugestão de bebidas
         window.abrirSugestaoBebidas = abrirSugestaoBebidas;
         window.adicionarBebidaSugestao = adicionarBebidaSugestao;
         window.fecharSugestaoBebidas = fecharSugestaoBebidas;
         
-        // Funções de cálculo
         window.calcularTotalCarrinho = calcularTotalCarrinho;
         window.atualizarTotalCheckout = atualizarTotalCheckout;
 
-        // Iniciar
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => setTimeout(init, 500));
         } else {
